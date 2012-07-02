@@ -272,7 +272,14 @@
                                      (.read mod stream *rdf-ns* format))))
                  model))
   (output-string  [model writer format]
-                  (critical-read model (fn [] (.write mod writer (parse-format format)))))
+                  (critical-read model (fn [] 
+                                         (try
+                                           (let [existing-prefixes (.getNsPrefixMap mod)
+                                                 new-map @*rdf-ns-table*
+                                                 new-prefixes (zipmap (map name (keys new-map)) (vals new-map))]
+                                             (.setNsPrefixes mod (merge new-prefixes existing-prefixes)))
+                                           (catch Exception e (.printStackTrace e)))
+                                         (.write mod writer (parse-format format)))))
   (output-string  [model format]
                   (output-string model *out* format))
   (query [model query] (model-query-fn model query (str (build-query *sparql-framework* query))))
