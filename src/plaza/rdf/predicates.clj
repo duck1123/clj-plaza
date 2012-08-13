@@ -112,11 +112,6 @@
 
 ;; model value extraction
 
-(defn triple-check-apply
-  "Applies a predicate to a concrete value"
-  [predicate val]
-  (predicate val val))
-
 (defn fn-apply?
   "Applies a function to a value"
   [f]
@@ -133,6 +128,11 @@
   "Checks if one triple matches a set of conditions"
   [cond]
   (fn [triple] ((triple-and? cond) triple)))
+
+(defn triple-check-apply
+  "Applies a predicate to a concrete value"
+  [predicate val]
+  (predicate val val))
 
 (defn triple-transform
   "Accepts a single argument function that will receive a triple and transform it"
@@ -173,7 +173,7 @@
   "Checks if a triple is an optional part of a query"
   []
   (fn [triple atom]
-    (= true (:optional (meta triple)))))
+    (:optional (meta triple))))
 
 (defn has-datatype?
   "Matches the value or the value and language of a literal"
@@ -263,6 +263,3 @@
   "Shortcut for triple-transform"
   [& args]
   (apply triple-transform args))
-
-
-

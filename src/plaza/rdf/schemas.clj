@@ -151,12 +151,11 @@
 
   (to-rdf-triples [this]
     (let [subject (rdf-resource (type-uri this))]
-      (let [pre-super-types (reduce (fn [ts k] (let [prop (rdf-resource (get properties k))
-                                                     range (:range (get ranges k))
-                                                     tsp (conj ts [prop (rdf-resource rdfs:range)
-                                                                   (rdf-resource range)])]
-                                                 (conj tsp
-                                                       [prop (rdf-resource rdfs:domain) subject])))
+      (let [pre-super-types (reduce (fn [ts k]
+                                      (let [prop (rdf-resource (get properties k))
+                                            range (:range (get ranges k))
+                                            tsp (conj ts [prop (rdf-resource rdfs:range) (rdf-resource range)])]
+                                        (conj tsp [prop (rdf-resource rdfs:domain) subject])))
                                     [[subject (rdf-resource rdf:type) (rdf-resource rdfs:Class)]]
                                     (keys properties))
             super-types-triples (map (fn [st] [subject (rdf-resource rdf:type)
