@@ -40,7 +40,6 @@
 (fact "create-model-jena"
   (build-model :jena) => model?)
 
-
 (fact "with-rdf-ns"
   (let [before *rdf-ns*
         new-ns "hello"]
