@@ -67,22 +67,23 @@
               (if (.startsWith literal-str "http://")
                 (aget (.split literal-str "#") 1)
                 literal))]
-    (cond
-     (= "xmlliteral" (.toLowerCase (keyword-to-string lit))) XMLLiteralType/theXMLLiteralType
-     (= "literal" (.toLowerCase (keyword-to-string lit))) XMLLiteralType/theXMLLiteralType
-     (= "anyuri" (.toLowerCase (keyword-to-string lit))) XSDDatatype/XSDanyURI
-     (= "boolean" (.toLowerCase (keyword-to-string lit))) XSDDatatype/XSDboolean
-     (= "byte" (.toLowerCase (keyword-to-string lit))) XSDDatatype/XSDbyte
-     (= "date" (.toLowerCase (keyword-to-string lit))) XSDDatatype/XSDdate
-     (= "datetime" (.toLowerCase (keyword-to-string lit))) XSDDatatype/XSDdateTime
-     (= "decimal" (.toLowerCase (keyword-to-string lit))) XSDDatatype/XSDdecimal
-     (= "double" (.toLowerCase (keyword-to-string lit))) XSDDatatype/XSDdouble
-     (= "float" (.toLowerCase (keyword-to-string lit))) XSDDatatype/XSDfloat
-     (= "int" (.toLowerCase (keyword-to-string lit))) XSDDatatype/XSDint
-     (= "integer" (.toLowerCase (keyword-to-string lit))) XSDDatatype/XSDinteger
-     (= "long" (.toLowerCase (keyword-to-string lit))) XSDDatatype/XSDlong
-     (= "string" (.toLowerCase (keyword-to-string lit))) XSDDatatype/XSDstring
-     :else (make-custom-type literal))))
+    (condp = (.toLowerCase (keyword-to-string lit))
+      "xmlliteral" XMLLiteralType/theXMLLiteralType
+      "literal"    XMLLiteralType/theXMLLiteralType
+      "anyuri"     XSDDatatype/XSDanyURI
+      "boolean"    XSDDatatype/XSDboolean
+      "byte"       XSDDatatype/XSDbyte
+      "date"       XSDDatatype/XSDdate
+      "datetime"   XSDDatatype/XSDdateTime
+      "decimal"    XSDDatatype/XSDdecimal
+      "double"     XSDDatatype/XSDdouble
+      "float"      XSDDatatype/XSDfloat
+      "int"        XSDDatatype/XSDint
+      "integer"    XSDDatatype/XSDinteger
+      "long"       XSDDatatype/XSDlong
+      "string"     XSDDatatype/XSDstring
+
+      (make-custom-type literal))))
 
 (defn datatype-symbol
   "Transforms a XMLSchema datatype URI into a symbol representing the type"
@@ -198,29 +199,30 @@
 (defn parse-filter-expr
   "Parses a filter expression"
   [expr]
-  (cond
-   (= (class expr) E_Str) (parse-filter-expr-1 "str")
-   (= (class expr) E_Lang) (parse-filter-expr-1 expr "lang")
-   (= (class expr) E_Datatype) (parse-filter-expr-1 expr "datatype")
+  (condp = (class expr)
+    E_Str                (parse-filter-expr-1 "str")
+    E_Lang               (parse-filter-expr-1 expr "lang")
+    E_Datatype           (parse-filter-expr-1 expr "datatype")
 
-   (= (class expr) E_Bound) (parse-filter-expr-1 expr "bound")
-   (= (class expr) E_IsIRI) (parse-filter-expr-1 expr "isIRI")
-   (= (class expr) E_IsURI) (parse-filter-expr-1 expr "isURI")
-   (= (class expr) E_IsBlank) (parse-filter-expr-1 expr "isBlank")
-   (= (class expr) E_IsLiteral) (parse-filter-expr-1 expr "isLiteral")
+    E_Bound              (parse-filter-expr-1 expr "bound")
+    E_IsIRI              (parse-filter-expr-1 expr "isIRI")
+    E_IsURI              (parse-filter-expr-1 expr "isURI")
+    E_IsBlank            (parse-filter-expr-1 expr "isBlank")
+    E_IsLiteral          (parse-filter-expr-1 expr "isLiteral")
 
-   (= (class expr) E_GreaterThanOrEqual) (parse-filter-expr-2 expr ">=")
-   (= (class expr) E_GreaterThan) (parse-filter-expr-2 expr ">")
-   (= (class expr) E_LessThanOrEqual) (parse-filter-expr-2 expr "<=")
-   (= (class expr) E_LessThan) (parse-filter-expr-2 expr "<")
-   (= (class expr) E_NotEquals) (parse-filter-expr-2 expr "!=")
-   (= (class expr) E_Equals) (parse-filter-expr-2 expr "=")
-   (= (class expr) E_Subtract) (parse-filter-expr-2 expr "-")
-   (= (class expr) E_Add) (parse-filter-expr-2 expr "+")
-   (= (class expr) E_Multiply) (parse-filter-expr-2 expr "*")
-   (= (class expr) E_Divide) (parse-filter-expr-2 expr "div")
-   (= (class expr) E_SameTerm) (parse-filter-expr-2 expr "sameTerm")
-   :else (throw (Exception. (str "Trying to parse unknown/not supported filter: " expr)))))
+    E_GreaterThanOrEqual (parse-filter-expr-2 expr ">=")
+    E_GreaterThan        (parse-filter-expr-2 expr ">")
+    E_LessThanOrEqual    (parse-filter-expr-2 expr "<=")
+    E_LessThan           (parse-filter-expr-2 expr "<")
+    E_NotEquals          (parse-filter-expr-2 expr "!=")
+    E_Equals             (parse-filter-expr-2 expr "=")
+    E_Subtract           (parse-filter-expr-2 expr "-")
+    E_Add                (parse-filter-expr-2 expr "+")
+    E_Multiply           (parse-filter-expr-2 expr "*")
+    E_Divide             (parse-filter-expr-2 expr "div")
+    E_SameTerm           (parse-filter-expr-2 expr "sameTerm")
+
+    (throw (Exception. (str "Trying to parse unknown/not supported filter: " expr)))))
 
 (defn sparql-to-pattern-filters
   "Parses a SPARQL query and transform it into a pattern and some filters"
@@ -285,30 +287,30 @@
 (defn- build-filter-two-parts
   "Builds a filter with two parts"
   [expression arg-0 arg-1]
-  (cond
-   (= expression :>=) (E_GreaterThanOrEqual. arg-0 arg-1)
-   (= expression :>) (E_GreaterThan. arg-0 arg-1)
-   (= expression :<=) (E_LessThanOrEqual. arg-0 arg-1)
-   (= expression :<) (E_LessThan. arg-0 arg-1)
-   (= expression :!=) (E_NotEquals. arg-0 arg-1)
-   (= expression :=) (E_Equals. arg-0 arg-1)
-   (= expression :-) (E_Subtract. arg-0 arg-1)
-   (= expression :+) (E_Add. arg-0 arg-1)
-   (= expression :*) (E_Multiply. arg-0 arg-1)
-   (= expression :div) (E_Divide. arg-0 arg-1)
-   (= expression :sameTerm) (E_SameTerm. arg-0 arg-1)))
+  (condp = expression
+    :>=       (E_GreaterThanOrEqual. arg-0 arg-1)
+    :>        (E_GreaterThan. arg-0 arg-1)
+    :<=       (E_LessThanOrEqual. arg-0 arg-1)
+    :<        (E_LessThan. arg-0 arg-1)
+    :!=       (E_NotEquals. arg-0 arg-1)
+    :=        (E_Equals. arg-0 arg-1)
+    :-        (E_Subtract. arg-0 arg-1)
+    :+        (E_Add. arg-0 arg-1)
+    :*        (E_Multiply. arg-0 arg-1)
+    :div      (E_Divide. arg-0 arg-1)
+    :sameTerm (E_SameTerm. arg-0 arg-1)))
 
 (defn- build-filter-one-part
   [expression arg]
-  (cond
-   (= expression :str) (E_Str. arg)
-   (= expression :lang) (E_Lang. arg)
-   (= expression :datatype) (E_Datatype. arg)
-   (= expression :bound) (E_Bound. arg)
-   (= expression :isIRI) (E_IsIRI. arg)
-   (= expression :isURI) (E_IsURI. arg)
-   (= expression :isBlank) (E_IsBlank. arg)
-   (= expression :isLiteral) (E_IsLiteral. arg)))
+  (condp = expression
+    :str       (E_Str. arg)
+    :lang      (E_Lang. arg)
+    :datatype  (E_Datatype. arg)
+    :bound     (E_Bound. arg)
+    :isIRI     (E_IsIRI. arg)
+    :isURI     (E_IsURI. arg)
+    :isBlank   (E_IsBlank. arg)
+    :isLiteral (E_IsLiteral. arg)))
 
 (defn- build-filter-arg
   [builder arg]
