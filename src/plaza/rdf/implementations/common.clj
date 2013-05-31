@@ -183,9 +183,9 @@
 (defn- parse-next-filter-expr
   [expr]
   (cond
-   (is-var-expr-fn expr) (keyword (.toString expr))
+   (is-var-expr-fn expr) (keyword (str expr))
    (is-filter-expr expr) (parse-filter-expr expr)
-   true (parse-literal-lexical (.toString expr))))
+   true (parse-literal-lexical (str expr))))
 
 (defn- parse-filter-expr-2
   [expr symbol]
