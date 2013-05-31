@@ -313,10 +313,10 @@
    (keyword? arg) (ExprVar. (.replace (keyword->string arg) "?" ""))
    (map? arg) (build-filter builder arg)
    (is-resource arg) (NodeValue/makeNode (Node/createURI (resource-id arg)))
-   true (NodeValue/makeNode
-         (literal-lexical-form arg)
-         (literal-language arg)
-         (literal-datatype-uri arg))))
+   :default (NodeValue/makeNode
+             (literal-lexical-form arg)
+             (literal-language arg)
+             (literal-datatype-uri arg))))
 
 (defn build-filter-fn
   [builder filter]
