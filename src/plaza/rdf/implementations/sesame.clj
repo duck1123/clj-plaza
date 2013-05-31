@@ -210,9 +210,9 @@
   (is-literal [resource]
     true)
   (resource-id [resource]
-    (if (not (= (.getLanguage res) ""))
-      (str (.getLabel res) "@" (.getLanguage res))
-      (.getLabel res)))
+    (if (= (.getLanguage res) "")
+      (.getLabel res)
+      (str (.getLabel res) "@" (.getLanguage res))))
   (qname-prefix [resource]
     (throw (Exception. "Cannot retrieve qname-prefix value for a literal")))
   (qname-local [resource]
@@ -388,11 +388,12 @@
                           (into-array org.openrdf.model.Resource [])))
                   g)]
       (try
-        (do
-          (.setAutoCommit connection false)
-          (.add connection graph (into-array org.openrdf.model.Resource []))
-          (.commit connection))
-        (catch RepositoryException e (.rollback connection))
+        (doto connection
+          (.setAutoCommit false)
+          (.add graph (into-array org.openrdf.model.Resource []))
+          (.commit))
+        (catch RepositoryException e
+          (.rollback connection))
         (finally (.close connection)))
       model))
   (remove-triples [model triples]
@@ -401,7 +402,7 @@
         (do
           (.setAutoCommit connection false)
           (loop [acum triples]
-            (when (not (empty? acum))
+            (when (seq acum)
               (let [[ms mp mo] (first acum)]
                 (.remove connection (to-java ms) (to-java (create-property model mp)) (to-java mo)
                          (into-array org.openrdf.model.Resource [])) ;; varargs!
@@ -456,16 +457,15 @@
           (.add connection stream *rdf-ns* format (into-array org.openrdf.model.Resource [])))
         (finally (.close connection)))
       model))
-  (output-string  [model writer format]
-    (do
-      (let [connection (.getConnection mod)
-            writer (org.openrdf.rio.Rio/createWriter
-                    (translate-plaza-format (parse-format format)) writer)]
-        (try
-          (.export connection writer (into-array org.openrdf.model.Resource []))
-          (finally (.close connection)))))
+  (output-string [model writer format]
+    (let [connection (.getConnection mod)
+          writer (org.openrdf.rio.Rio/createWriter
+                  (translate-plaza-format (parse-format format)) writer)]
+      (try
+        (.export connection writer (into-array org.openrdf.model.Resource []))
+        (finally (.close connection))))
     model)
-  (output-string  [model format]
+  (output-string [model format]
     (output-string model *out* format))
   (find-datatype [model literal]
     (translate-plaza-format (parse-format format)))

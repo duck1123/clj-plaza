@@ -112,8 +112,10 @@
 (defn supported-datatype?
   "Returns true if the datatype sym or URI string is supported"
   [sym]
-  (try (do (find-jena-datatype sym) true)
-       (catch Exception ex false)))
+  (try
+    (find-jena-datatype sym)
+    true
+    (catch Exception ex false)))
 
 (defn datatype-uri
   "Returns the URI for a datatype symbol like :int :decimal or :anyuri"
@@ -363,7 +365,7 @@
                                                                   (build-query-atom (nth item 1))
                                                                   (build-query-atom (nth item 2))))
                                 {:building building
-                                        :optional (conj optional optg)})
+                                 :optional (conj optional optg)})
                               ;; Is not an optional triple
                               (do (.addTriplePattern building
                                                      (Triple/create
@@ -381,34 +383,33 @@
                             (.addElement (:building built-patterns)
                                          (ElementOptional. optg))))
                         (:building built-patterns))
-        built-filters (loop [bfs (map (fn [f] (build-filter builder f))
+        built-filters (loop [bfs (map (partial build-filter builder)
                                       (if (nil? (:filters query)) [] (:filters query)))]
-                        (if (not (empty? bfs))
-                          (let [bf (first bfs)]
-                            (.addElement built-pattern (ElementFilter. bf))
-                            (recur (rest bfs)))))]
+                        (when-let [bf (first bfs)]
+                          (.addElement built-pattern (ElementFilter. bf))
+                          (recur (rest bfs))))]
     (do
       (loop [idx 0]
         (when (< idx (count (:vars query)))
           (do
             (.addResultVar built-query (keyword-to-variable (nth (:vars query) idx)))
-            (recur (inc idx)))))
-      (.setQueryPattern built-query built-pattern)
+            (recur (inc idx))))))
+    (.setQueryPattern built-query built-pattern)
 
-      (condp = (:kind query)
-        :ask       (.setQueryAskType built-query)
-        :construct (.setQueryConstructType built-query)
-        :describe  (.setQueryDescribeType built-query)
-        :select    (.setQuerySelectType built-query))
+    (condp = (:kind query)
+      :ask       (.setQueryAskType built-query)
+      :construct (.setQueryConstructType built-query)
+      :describe  (.setQueryDescribeType built-query)
+      :select    (.setQuerySelectType built-query))
 
-      (when (:limit query)
-        (.setLimit built-query (:limit query)))
-      (when (:offset query)
-        (.setOffset built-query (:offset query)))
-      (when (:distinct query)
-        (.setDistinct built-query true))
-      (when (:reduced query)
-        (.setReduced built-query true))
-      (when (:order-by query)
-        (.addOrderBy built-query (keyword-to-variable (:order-by query)) 1))
-      built-query)))
+    (when (:limit query)
+      (.setLimit built-query (:limit query)))
+    (when (:offset query)
+      (.setOffset built-query (:offset query)))
+    (when (:distinct query)
+      (.setDistinct built-query true))
+    (when (:reduced query)
+      (.setReduced built-query true))
+    (when (:order-by query)
+      (.addOrderBy built-query (keyword-to-variable (:order-by query)) 1))
+    built-query))
