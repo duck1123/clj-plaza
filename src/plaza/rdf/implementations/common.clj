@@ -173,7 +173,8 @@
                        (.endsWith val-tmp "\""))
                 (aget (.split (aget (.split val-tmp "\"") 1) "\"") 0)
                 val-tmp))
-        lang-tag (if (= (alength parts-b) 2) (aget parts-b 1) nil)]
+        lang-tag (when (= (alength parts-b) 2)
+                   (aget parts-b 1))]
     (if (nil? lang-tag)
       (rdf-typed-literal val datatype)
       (rdf-literal val lang-tag))))
