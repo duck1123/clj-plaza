@@ -92,14 +92,16 @@
   (fn [& options] [(first options)]))
 
 (defmethod build-model [nil]
-  ([& options] (if (nil? *rdf-model-builder-fn*)
-                 (throw (Exception. "Some framework must be loaded"))
-                 (build-model *rdf-model-builder-fn*))))
+  [& options]
+  (if (nil? *rdf-model-builder-fn*)
+    (throw (Exception. "Some framework must be loaded"))
+    (build-model *rdf-model-builder-fn*)))
 
 (defmethod build-model :default
-  ([& options] (if (nil? *rdf-model-builder-fn*)
-                 (throw (Exception. "Some framework must be loaded"))
-                 (build-model *rdf-model-builder-fn*))))
+  [& options]
+  (if (nil? *rdf-model-builder-fn*)
+    (throw (Exception. "Some framework must be loaded"))
+    (build-model *rdf-model-builder-fn*)))
 
 
 
@@ -109,22 +111,22 @@
   "Alters the root binding for the default model. This function
    should only be used when setting up the application, with-model
    macro should be used by default"
-  ([new-model]
-     (alter-var-root #'*rdf-model* (fn [_] new-model))))
+  [new-model]
+  (alter-var-root #'*rdf-model* (fn [_] new-model)))
 
 (defn alter-root-rdf-ns
   "Alters the root binding for the default model. This function
    should only be used when setting up the application, with-rdf-ns
    macro should be used by default"
-  ([new-rdf-ns]
-     (alter-var-root #'*rdf-ns* (fn [_] new-rdf-ns))))
+  [new-rdf-ns]
+  (alter-var-root #'*rdf-ns* (fn [_] new-rdf-ns)))
 
 (defn alter-root-model-builder-fn
   "Alters the root binding for the default model builder function.
    This function should only be used when setting up the application
    with-rdf-ns macro should be used by default"
-  ([builder-fn]
-     (alter-var-root #'*rdf-model-builder-fn* (fn [_] builder-fn))))
+  [builder-fn]
+  (alter-var-root #'*rdf-model-builder-fn* (fn [_] builder-fn)))
 
 (defmacro with-rdf-ns
   "Sets up the default namespace for a set of forms"
@@ -156,37 +158,38 @@
 
 (defn register-rdf-ns
   "Add a registered namespace to the registry of namespaces"
-  ([ns uri]
-     (dosync
-      (alter *rdf-ns-table* (fn [old] (assoc old (keyword ns) uri)))
-      (alter *rdf-ns-inverse-table* (fn [old] (assoc old uri (keyword ns)))))))
+  [ns uri]
+  (dosync
+   (alter *rdf-ns-table* (fn [old] (assoc old (keyword ns) uri)))
+   (alter *rdf-ns-inverse-table* (fn [old] (assoc old uri (keyword ns))))))
 
 (defn find-ns-registry
   "Checks if a provided namespace has an associated uri in the registry of namespaces"
-  ([ns]
-     (dosync
-      (get @*rdf-ns-table* ns))))
+  [ns]
+  (dosync
+   (get @*rdf-ns-table* ns)))
 
 (defn find-ns-registry-by-uri
   "Checks if a provided namespace has an associated uri in the registry of namespaces"
-  ([uri]
-     (dosync
-      (get @*rdf-ns-inverse-table* uri))))
+  [uri]
+  (dosync
+   (get @*rdf-ns-inverse-table* uri)))
 
 (defn expand-ns
   "Provided a pair [ns local] tries to expand the ns with the information in the rdf-ns registry"
-  ([ns local]
-     (let [registry-ns (find-ns-registry ns)
-           expanded-ns (keyword-to-string (if (nil? registry-ns) ns registry-ns))]
-       (if (.startsWith expanded-ns "http")
-         (str expanded-ns (keyword-to-string local))
-         (throw (Exception. (str "Unknown RDF namespace " expanded-ns " with local part " local)))))))
+  [ns local]
+  (let [registry-ns (find-ns-registry ns)
+        expanded-ns (keyword-to-string (if (nil? registry-ns) ns registry-ns))]
+    (if (.startsWith expanded-ns "http")
+      (str expanded-ns (keyword-to-string local))
+      (throw (Exception. (str "Unknown RDF namespace " expanded-ns " with local part " local))))))
 
 ;;; Manipulation of models
 
 (defn reset-model
   "Resets the root model with a fresh model object"
-  ([] (alter-root-model (build-model))))
+  []
+  (alter-root-model (build-model)))
 
 (defn rdf-property
   "Creates a new rdf property"
@@ -200,11 +203,11 @@
 
 (defn is-blank-node
   "Checks if a RDF resource"
-  ([resource]
-     (if (or (string? resource)
-             (keyword? resource))
-       false
-       (is-blank resource))))
+  [resource]
+  (if (or (string? resource)
+          (keyword? resource))
+    false
+    (is-blank resource)))
 
 (defn blank-node
   ([]
@@ -219,8 +222,8 @@
 
 
 (defn blank-node-id
-  ([b]
-     (keyword (str (resource-id b)))))
+  [b]
+  (keyword (str (resource-id b))))
 
 (defn rdf-literal
   "Creates a new rdf literal"
@@ -259,129 +262,133 @@
 
 (defn date
   "Shortcut for rdf-date"
-  ([& args]
-     (apply rdf-date args)))
+  [& args]
+  (apply rdf-date args))
 
 (defn triple-subject
   "Defines a subject for a statement"
-  ([subject]
-     (if (and (instance? plaza.rdf.core.RDFResource subject)
-              (is-resource subject))
-       subject
-       (if (coll? subject)
-         (let [[rdf-ns local] subject]
-           (rdf-resource rdf-ns local))
-         (if (is-blank-node subject)
-           subject
-           (if (.startsWith (keyword-to-string subject) "?")
-             (keyword subject)
-             (rdf-resource subject)))))))
+  [subject]
+  (if (and (instance? plaza.rdf.core.RDFResource subject)
+           (is-resource subject))
+    subject
+    (if (coll? subject)
+      (let [[rdf-ns local] subject]
+        (rdf-resource rdf-ns local))
+      (if (is-blank-node subject)
+        subject
+        (if (.startsWith (keyword-to-string subject) "?")
+          (keyword subject)
+          (rdf-resource subject))))))
 
 (defn triple-predicate
   "Defines the predicate of a statement"
-  ([predicate]
-     (if (and (instance? plaza.rdf.core.RDFResource predicate)
-              (is-resource predicate))
-       predicate
-       (if (instance? plaza.rdf.core.RDFResource predicate)
-         (rdf-property predicate)
-         (if (coll? predicate)
-           (let [[rdf-ns local] predicate]
-             (rdf-property rdf-ns local))
-           (if (is-blank-node predicate)
-             (throw (Exception. "Blank node cannot be predicate in a model"))
-             (if (.startsWith (keyword-to-string predicate) "?")
-               (keyword predicate)
-               (rdf-property predicate))))))))
+  [predicate]
+  (if (and (instance? plaza.rdf.core.RDFResource predicate)
+           (is-resource predicate))
+    predicate
+    (if (instance? plaza.rdf.core.RDFResource predicate)
+      (rdf-property predicate)
+      (if (coll? predicate)
+        (let [[rdf-ns local] predicate]
+          (rdf-property rdf-ns local))
+        (if (is-blank-node predicate)
+          (throw (Exception. "Blank node cannot be predicate in a model"))
+          (if (.startsWith (keyword-to-string predicate) "?")
+            (keyword predicate)
+            (rdf-property predicate)))))))
 
 (defn triple-object
   "Defines the object of a statement"
-  ([literal]
-     (if (and (instance? plaza.rdf.core.RDFResource literal)
-              (is-literal literal))
-       literal
-       (triple-subject literal))))
+  [literal]
+  (if (and (instance? plaza.rdf.core.RDFResource literal)
+           (is-literal literal))
+    literal
+    (triple-subject literal)))
 
 (defn rdf-triple
   "Parses a RDF triple"
-  ([to-parse]
-     (if (and (coll? (first to-parse))
-              (= (count (first to-parse)) 3))
-       (map #(rdf-triple %1) to-parse)
-       (if (= (count to-parse) 3)
-         (let [[s p o] to-parse]
-           [(triple-subject s)
-            (triple-predicate p)
-            (triple-object o)])
-         (let [[s ts] to-parse
-               c      (fold-list ts)]
-           (vec (map (fn [po] (rdf-triple [s (nth po 0) (nth po 1)]))  c)))))))
+  [to-parse]
+  (if (and (coll? (first to-parse))
+           (= (count (first to-parse)) 3))
+    (map #(rdf-triple %1) to-parse)
+    (if (= (count to-parse) 3)
+      (let [[s p o] to-parse]
+        [(triple-subject s)
+         (triple-predicate p)
+         (triple-object o)])
+      (let [[s ts] to-parse
+            c      (fold-list ts)]
+        (vec (map (fn [po] (rdf-triple [s (nth po 0) (nth po 1)]))  c))))))
 
 (defn- rdf-clone-resource
-  ([res]
-     (rdf-resource (resource-id res))))
+  [res]
+  (rdf-resource (resource-id res)))
 
 (defn- rdf-clone-property
-  ([prop]
-     (if (instance? plaza.rdf.core.RDFPrintable prop)
-       (rdf-property (to-string prop))
-       (rdf-property (str prop)))))
+  [prop]
+  (if (instance? plaza.rdf.core.RDFPrintable prop)
+    (rdf-property (to-string prop))
+    (rdf-property (str prop))))
 
 (defn- rdf-clone-literal
-  ([lit] (if (= (literal-language lit) "")
-           (rdf-typed-literal (literal-value lit) (literal-datatype-obj lit))
-           (rdf-literal (literal-value lit) (literal-language lit)))))
+  [lit]
+  (if (= (literal-language lit) "")
+    (rdf-typed-literal (literal-value lit) (literal-datatype-obj lit))
+    (rdf-literal (literal-value lit) (literal-language lit))))
 
 (defn- rdf-clone-property
-  ([res]
-     (rdf-resource (resource-id res))))
+  [res]
+  (rdf-resource (resource-id res)))
 
 (defn- rdf-clone-blank-node
-  ([blank]
-     (blank-node (blank-node-id blank))))
+  [blank]
+  (blank-node (blank-node-id blank)))
 
 (defn rdf-clone
   "Clones a triple component"
-  ([rdf-obj]
-     (cond
-      (keyword? rdf-obj) rdf-obj        ;variable
-      (is-blank-node rdf-obj) (rdf-clone-blank-node rdf-obj)
-      (is-literal rdf-obj) (rdf-clone-literal rdf-obj)   ;literal
-      (is-property rdf-obj) (rdf-clone-property rdf-obj) ;property
-      (is-resource rdf-obj) (rdf-clone-resource rdf-obj) ;resource
-      )))
+  [rdf-obj]
+  (cond
+   (keyword? rdf-obj) rdf-obj        ;variable
+   (is-blank-node rdf-obj) (rdf-clone-blank-node rdf-obj)
+   (is-literal rdf-obj) (rdf-clone-literal rdf-obj)   ;literal
+   (is-property rdf-obj) (rdf-clone-property rdf-obj) ;property
+   (is-resource rdf-obj) (rdf-clone-resource rdf-obj) ;resource
+   ))
 
 (defn resource-uri
   "Extracts the URI of a resource"
-  ([resource] (resource-id resource)))
+  [resource]
+  (resource-id resource))
 
 (defn resource-qname-prefix
   "Extracts the prefix of a QNAME resource URI"
-  ([resource] (qname-prefix resource)))
+  [resource]
+  (qname-prefix resource))
 
 (defn resource-qname-local
   "Extracts the local part of a QNAME resource URI"
-  ([resource] (qname-local resource)))
+  [resource]
+  (qname-local resource))
 
 
 (defn make-triples
   "Builds a new collection of triples"
-  ([ts]
-     (with-meta
-       (reduce
-        (fn [acum item]
-          (if (and (coll? item) (coll? (first item)))
-            (vec (concat acum item))
-            (conj acum item)))
-        []
-        (map (fn [t] (rdf-triple t)) ts))
-       {:triples true})))
+  [ts]
+  (with-meta
+    (reduce
+     (fn [acum item]
+       (if (and (coll? item) (coll? (first item)))
+         (vec (concat acum item))
+         (conj acum item)))
+     []
+     (map (fn [t] (rdf-triple t)) ts))
+    {:triples true}))
 
 
 (defn- check-triples
   "Ensures a set of triples is built"
-  ([ts]
-     (if (:triples (meta ts)) ts (make-triples ts))))
+  [ts]
+  (if (:triples (meta ts)) ts (make-triples ts)))
 
 (defmacro model-critical-write [m & body]
   `(critical-write ~m (fn [] ~@body)))
@@ -391,33 +398,33 @@
 
 (defn model-add-triples
   "Adds a collection of triples to a model"
-  ([ts]
-     (let [mts (check-triples ts)]
-       (add-triples *rdf-model* mts))))
+  [ts]
+  (let [mts (check-triples ts)]
+    (add-triples *rdf-model* mts)))
 
 (defn model-remove-triples
   "Removes a collection of triples to a model"
-  ([ts]
-     (let [mts (check-triples ts)]
-       (remove-triples *rdf-model* mts))))
+  [ts]
+  (let [mts (check-triples ts)]
+    (remove-triples *rdf-model* mts)))
 
 (defn is-model
   "Checks if an object is a model"
-  ([obj]
-     (instance? plaza.rdf.core.RDFModel obj)))
+  [obj]
+  (instance? plaza.rdf.core.RDFModel obj))
 
 ;;;@todo
 (defn model-to-triples
   "Extracts the triples stored into a model"
-  ([model]
-     (with-meta (walk-triples model (fn [s p o] [s p o])) {:triples true})))
+  [model]
+  (with-meta (walk-triples model (fn [s p o] [s p o])) {:triples true}))
 
 ;; Models IO
 
 (defn document-to-model
   "Adds a set of triples read from a serialized document into a model"
-  ([stream format]
-     (load-stream *rdf-model* stream format)))
+  [stream format]
+  (load-stream *rdf-model* stream format))
 
 
 (defn model-to-format
@@ -434,132 +441,135 @@
 
 (defn triples-to-format
   "Writes a set of triple using the "
-  ([triples & args]
-     (with-model (build-model)
-       (model-add-triples triples)
-       (apply model-to-format args))))
+  [triples & args]
+  (with-model (build-model)
+    (model-add-triples triples)
+    (apply model-to-format args)))
 
 (defn triples-to-string
   "Shows a set of triples using string representations for the triples components"
-  ([triples]
-     (map (fn [[s p o]] [(to-string s) (to-string p) (to-string o)]) triples)))
+  [triples]
+  (map (fn [[s p o]] [(to-string s) (to-string p) (to-string o)]) triples))
 
 ;; model manipulation predicates
 (defn subject-from-triple
   "Extract the subject from a triple"
-  ([[s p o]]
-     s))
+  [[s p o]]
+  s)
 
 (defn s
   "Shortcut for subject-from-triple"
-  ([t] (subject-from-triple t)))
+  [t]
+  (subject-from-triple t))
 
 (defn predicate-from-triple
   "Extract the predicate from a triple"
-  ([[s p o]]
-     p))
+  [[s p o]]
+  p)
 
 (defn p
   "Shortcut for predicate-from-triple"
-  ([t] (predicate-from-triple t)))
+  [t]
+  (predicate-from-triple t))
 
 (defn object-from-triple
   "Extract the object from a triple"
-  ([[s p o]]
-     o))
+  [[s p o]]
+  o)
 
 (defn o
   "Shortcut for object-from-triple"
-  ([t] (object-from-triple t)))
+  [t]
+  (object-from-triple t))
 
 (defn find-resources
   "Retrieves the resources (collections triples with the same subject) inside a model or triple set"
-  ([model-or-triples]
-     (let [triples (model-to-triples model-or-triples)]
-       (loop [acum {}
-              max (count triples)
-              idx 0]
-         (if (< idx max)
-           (let [t (nth triples idx)
-                 key (to-string (subject-from-triple t))
-                 acump (if (get acum key) (assoc acum key (conj (get acum key) t)) (assoc acum key [t]))]
-             (recur acump max (+ idx 1)))
-           (vals acum))))))
+  [model-or-triples]
+  (let [triples (model-to-triples model-or-triples)]
+    (loop [acum {}
+           max (count triples)
+           idx 0]
+      (if (< idx max)
+        (let [t (nth triples idx)
+              key (to-string (subject-from-triple t))
+              acump (if (get acum key) (assoc acum key (conj (get acum key) t)) (assoc acum key [t]))]
+          (recur acump max (+ idx 1)))
+        (vals acum)))))
 
 (defn find-resource-uris
   "Retrieves the resource uris (collections triples with the same subject) inside a model or triple set"
-  ([model-or-triples]
-     (let [triples (model-to-triples model-or-triples)]
-       (loop [acum []
-              max (count triples)
-              idx 0]
-         (if (< idx max)
-           (let [t (nth triples idx)
-                 key (to-string (subject-from-triple t))
-                 acump (if (empty? (filter #(= key %1) acum)) (conj acum key) acum)]
-             (recur acump max (+ idx 1)))
-           acum)))))
+  [model-or-triples]
+  (let [triples (model-to-triples model-or-triples)]
+    (loop [acum []
+           max (count triples)
+           idx 0]
+      (if (< idx max)
+        (let [t (nth triples idx)
+              key (to-string (subject-from-triple t))
+              acump (if (empty? (filter #(= key %1) acum)) (conj acum key) acum)]
+          (recur acump max (+ idx 1)))
+        acum))))
 
 
 (defn parse-format
-  ([format]
-     (cond (= (.toLowerCase (keyword-to-string format)) "xml") "RDF/XML"
-           (= (.toLowerCase (keyword-to-string format)) "xml-abbrev") "RDF/XML-ABBREV"
-           (= (.toLowerCase (keyword-to-string format)) "ntriple") "N-TRIPLE"
-           (= (.toLowerCase (keyword-to-string format)) "n3") "N3"
-           (= (.toLowerCase (keyword-to-string format)) "ttl") "TURTLE"
-           (= (.toLowerCase (keyword-to-string format)) "turtle") "TTL"
-           (= (.toLowerCase (keyword-to-string format)) "xhtml") "XHTML"
-           (= (.toLowerCase (keyword-to-string format)) "html") "HTML"
-           (= (.toLowerCase (keyword-to-string format)) "trig") "TRIG"
-           (= (.toLowerCase (keyword-to-string format)) "trix") "TRIX"
-           true "RDF/XML")))
+  [format]
+  (cond (= (.toLowerCase (keyword-to-string format)) "xml") "RDF/XML"
+        (= (.toLowerCase (keyword-to-string format)) "xml-abbrev") "RDF/XML-ABBREV"
+        (= (.toLowerCase (keyword-to-string format)) "ntriple") "N-TRIPLE"
+        (= (.toLowerCase (keyword-to-string format)) "n3") "N3"
+        (= (.toLowerCase (keyword-to-string format)) "ttl") "TURTLE"
+        (= (.toLowerCase (keyword-to-string format)) "turtle") "TTL"
+        (= (.toLowerCase (keyword-to-string format)) "xhtml") "XHTML"
+        (= (.toLowerCase (keyword-to-string format)) "html") "HTML"
+        (= (.toLowerCase (keyword-to-string format)) "trig") "TRIG"
+        (= (.toLowerCase (keyword-to-string format)) "trix") "TRIX"
+        true "RDF/XML"))
 
 (defn valid-format
-  ([format]
-     (cond (= (.toLowerCase (keyword-to-string format)) "xml") true
-           (= (.toLowerCase (keyword-to-string format)) "ntriple") true
-           (= (.toLowerCase (keyword-to-string format)) "n3") true
-           (= (.toLowerCase (keyword-to-string format)) "ttl") true
-           (= (.toLowerCase (keyword-to-string format)) "turtle") true
-           (= (.toLowerCase (keyword-to-string format)) "xhtml") true
-           (= (.toLowerCase (keyword-to-string format)) "html") true
-           (= (.toLowerCase (keyword-to-string format)) "trig") true
-           (= (.toLowerCase (keyword-to-string format)) "trix") true
-           true false)))
+  [format]
+  (cond (= (.toLowerCase (keyword-to-string format)) "xml") true
+        (= (.toLowerCase (keyword-to-string format)) "ntriple") true
+        (= (.toLowerCase (keyword-to-string format)) "n3") true
+        (= (.toLowerCase (keyword-to-string format)) "ttl") true
+        (= (.toLowerCase (keyword-to-string format)) "turtle") true
+        (= (.toLowerCase (keyword-to-string format)) "xhtml") true
+        (= (.toLowerCase (keyword-to-string format)) "html") true
+        (= (.toLowerCase (keyword-to-string format)) "trig") true
+        (= (.toLowerCase (keyword-to-string format)) "trix") true
+        true false))
 
 
 (defn optional
   "Marks the provided list of triples as optional triples in a query"
-  ([& triples]
-     (with-meta
-       (vec (map #(with-meta %1 {:optional true}) triples))
-       {:optional true})))
+  [& triples]
+  (with-meta
+    (vec (map #(with-meta %1 {:optional true}) triples))
+    {:optional true}))
 
 (defmacro opt
   "A shortcut for optional"
-  ([& args]
-     `(optional ~@args)))
+  [& args]
+  `(optional ~@args))
 
 
 ;; Triples <-> Pattern transformations
 
 (defn triples-abstraction
   "Transforms a set of triples into a pattern replacing some components with variables"
-  ([triples matcher-fn abstraction-map]
-     (vec
-      (map (fn [t]
-             (if (matcher-fn t t)
-               (let [t-s (if (:subject abstraction-map)
-                           [(triple-subject (:subject abstraction-map)) (nth t 1) (nth t 2)]
-                           t)
-                     t-p (if (:predicate abstraction-map)
-                           [(nth t-s 0) (triple-predicate (:predicate abstraction-map)) (nth t-s 2)]
-                           t-s)
-                     t-o (if (:object abstraction-map)
-                           [(nth t-p 0) (nth t-p 1) (triple-object (:object abstraction-map))]
-                           t-p)]
-                 t-o)
-               t))
-           triples))))
+  [triples matcher-fn abstraction-map]
+  (vec
+   (map (fn [t]
+          (if (matcher-fn t t)
+            (let [t-s (if (:subject abstraction-map)
+                        [(triple-subject (:subject abstraction-map)) (nth t 1) (nth t 2)]
+                        t)
+                  t-p (if (:predicate abstraction-map)
+                        [(nth t-s 0) (triple-predicate (:predicate abstraction-map)) (nth t-s 2)]
+                        t-s)
+                  t-o (if (:object abstraction-map)
+                        [(nth t-p 0) (nth t-p 1) (triple-object (:object abstraction-map))]
+                        t-p)]
+              t-o)
+            t))
+        triples)))
 

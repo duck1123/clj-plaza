@@ -12,13 +12,14 @@
 (defonce ^:dynamic *vocabularies-to-load* (ref []))
 
 (defmacro declare-schemas-to-load
-  ([& body]
-     `(let [to-load# (fn [] ~@body)]
-        (dosync (alter *vocabularies-to-load* (fn [old#] (conj old# to-load#)))))))
+  [& body]
+  `(let [to-load# (fn [] ~@body)]
+     (dosync (alter *vocabularies-to-load* (fn [old#] (conj old# to-load#))))))
 
 (defn init-vocabularies
-  ([] (dosync (alter *vocabularies-to-load*
-                     (fn [old] (doseq [v old] (v)) [])))))
+  []
+  (dosync (alter *vocabularies-to-load*
+                    (fn [old] (doseq [v old] (v)) []))))
 
 ;; auxiliary functions
 (defn find-property [prop triples]
@@ -43,20 +44,20 @@
   (aliases [this] "Returns all tha aliases for the properties of the model"))
 
 (defn- build-pattern-for-model
-  ([type-uri subj props properties]
-     (let [opt-props-to-add (vec (clojure.set/difference (set (keys properties)) (set props)))
-           props-to-add (if (empty? props) (keys properties) props)
-           mandatory-pattern (reduce (fn [ac it]
-                                       (when (nil? (it properties)) (throw (Exception. (str "Unknown property: " it " for type " type-uri " " properties))))
-                                       (conj ac [subj (it properties) (keyword (str "?" (keyword-to-string it)))]))
-                                     [(opt [subj rdf:type (resource-id type-uri)])]
-                                     props-to-add)
-           optional-pattern (reduce (fn [ac it]
-                                      (when (nil? (it properties)) (throw (Exception. (str "Unknown property: " it " for type " type-uri " " properties))))
-                                      (conj ac (opt [subj (it properties) (keyword (str "?" (keyword-to-string it)))])))
-                                    []
-                                    opt-props-to-add)]
-       (make-pattern (concat mandatory-pattern optional-pattern)))))
+  [type-uri subj props properties]
+  (let [opt-props-to-add (vec (clojure.set/difference (set (keys properties)) (set props)))
+        props-to-add (if (empty? props) (keys properties) props)
+        mandatory-pattern (reduce (fn [ac it]
+                                    (when (nil? (it properties)) (throw (Exception. (str "Unknown property: " it " for type " type-uri " " properties))))
+                                    (conj ac [subj (it properties) (keyword (str "?" (keyword-to-string it)))]))
+                                  [(opt [subj rdf:type (resource-id type-uri)])]
+                                  props-to-add)
+        optional-pattern (reduce (fn [ac it]
+                                   (when (nil? (it properties)) (throw (Exception. (str "Unknown property: " it " for type " type-uri " " properties))))
+                                   (conj ac (opt [subj (it properties) (keyword (str "?" (keyword-to-string it)))])))
+                                 []
+                                 opt-props-to-add)]
+    (make-pattern (concat mandatory-pattern optional-pattern))))
 
 ;; Types
 (declare wrap-rdfs-schema)
@@ -132,63 +133,63 @@
 
 (defn make-rdfs-schema
   "Defines a new RDFS Class with the provided URI and properties"
-  ([typeuri-pre & properties]
-     (let [typeuri (if (coll? typeuri-pre) (apply rdf-resource typeuri-pre) (rdf-resource typeuri-pre))
-           props-map-pre (apply hash-map properties)
-           maps (reduce (fn [[ac-props ac-ranges] it]
-                          (let [{uri :uri range :range} (it props-map-pre)
-                                prop-val (if (coll? uri) (apply rdf-resource uri) (rdf-resource uri))
-                                range-val (if (supported-datatype? range)
-                                            {:kind :datatype :range (rdf-resource (datatype-uri range))}
-                                            {:kind :resource :range (if (coll? range) (apply rdf-resource range) range)})]
-                            [(assoc ac-props it prop-val)
-                             (assoc ac-ranges it range-val)])) [{} {}] (keys props-map-pre))]
-       (plaza.rdf.schemas.RDFSModel. typeuri '() (first maps) (second maps)))))
+  [typeuri-pre & properties]
+  (let [typeuri (if (coll? typeuri-pre) (apply rdf-resource typeuri-pre) (rdf-resource typeuri-pre))
+        props-map-pre (apply hash-map properties)
+        maps (reduce (fn [[ac-props ac-ranges] it]
+                       (let [{uri :uri range :range} (it props-map-pre)
+                             prop-val (if (coll? uri) (apply rdf-resource uri) (rdf-resource uri))
+                             range-val (if (supported-datatype? range)
+                                         {:kind :datatype :range (rdf-resource (datatype-uri range))}
+                                         {:kind :resource :range (if (coll? range) (apply rdf-resource range) range)})]
+                         [(assoc ac-props it prop-val)
+                          (assoc ac-ranges it range-val)])) [{} {}] (keys props-map-pre))]
+    (plaza.rdf.schemas.RDFSModel. typeuri '() (first maps) (second maps))))
 
 (defn extend-rdfs-schemas
   "Defines a new RDFS Class that inherits all the properties defined in the list of provided schemas"
-  ([typeuri schemas & properties]
-     (let [props (flatten
-                  (map (fn [schema]
-                         (let [aliases (aliases schema)]
-                           (map (fn [alias] {:alias alias :property (property-uri schema alias) :range (property-range-description schema alias)}) aliases)))
-                       schemas))
-           prop-map (reduce (fn [acum prop]
-                              (if (contains? acum (:alias prop))
-                                (assoc acum (:property prop) (:property prop))
-                                (assoc acum (:alias prop) (:property prop))))
-                            {} props)
-           range-map (reduce (fn [acum prop]
-                               (let [alias (if (nil? (get prop-map (:alias prop))) (:property prop) (:alias prop))]
-                                 (assoc acum alias (:range prop))))
-                             {} props)]
-       (plaza.rdf.schemas.RDFSModel. typeuri (map #(type-uri %1) schemas) prop-map range-map))))
+  [typeuri schemas & properties]
+  (let [props (flatten
+               (map (fn [schema]
+                      (let [aliases (aliases schema)]
+                        (map (fn [alias] {:alias alias :property (property-uri schema alias) :range (property-range-description schema alias)}) aliases)))
+                    schemas))
+        prop-map (reduce (fn [acum prop]
+                           (if (contains? acum (:alias prop))
+                             (assoc acum (:property prop) (:property prop))
+                             (assoc acum (:alias prop) (:property prop))))
+                         {} props)
+        range-map (reduce (fn [acum prop]
+                            (let [alias (if (nil? (get prop-map (:alias prop))) (:property prop) (:alias prop))]
+                              (assoc acum alias (:range prop))))
+                          {} props)]
+    (plaza.rdf.schemas.RDFSModel. typeuri (map #(type-uri %1) schemas) prop-map range-map)))
 
 ;; Utils
 
 (defn wrap-rdfs-schema
-  ([uri super-types props ranges]
-     (plaza.rdf.schemas.RDFSModel. uri super-types props ranges)))
+  [uri super-types props ranges]
+  (plaza.rdf.schemas.RDFSModel. uri super-types props ranges))
 
 (defn- parse-rdf-schema-from-model
-  ([model resource]
-     (let [properties (flatten-1 (model-pattern-apply model [[?s rdfs:domain resource] [?s rdfs:range ?o]]))
-           prop-ranges (reduce (fn [acum [s p o]] (if (= (str p) rdfs:range)
-                                                    (let [prop-val (if (supported-datatype? (str o)) (datatype-symbol (str o)) (str o))]
-                                                      (conj acum {:uri (str s) :range prop-val} ))
-                                                    acum))
-                               [] properties)]
-       (reduce (fn [schema prop-map]
-                 (let [prop-alias (keyword (extract-local-part-uri (:uri prop-map)))]
-                   (add-property schema prop-alias (:uri prop-map) (:range prop-map))))
-               (make-rdfs-schema (str resource)) prop-ranges))))
+  [model resource]
+  (let [properties (flatten-1 (model-pattern-apply model [[?s rdfs:domain resource] [?s rdfs:range ?o]]))
+        prop-ranges (reduce (fn [acum [s p o]] (if (= (str p) rdfs:range)
+                                                (let [prop-val (if (supported-datatype? (str o)) (datatype-symbol (str o)) (str o))]
+                                                  (conj acum {:uri (str s) :range prop-val} ))
+                                                acum))
+                            [] properties)]
+    (reduce (fn [schema prop-map]
+              (let [prop-alias (keyword (extract-local-part-uri (:uri prop-map)))]
+                (add-property schema prop-alias (:uri prop-map) (:range prop-map))))
+            (make-rdfs-schema (str resource)) prop-ranges)))
 
 (defn parse-rdfs-schemas-from-model
   "Builds RDFS definition of resources from the set of triples in a RDF model"
-  ([model]
-     (let [resources-triples (flatten-1 (model-pattern-apply model [[?s rdf:type rdfs:Class]]))
-           resources (map (fn [[resource _p _o]] (str resource)) resources-triples)]
-       (map (fn [resource] (parse-rdf-schema-from-model model resource)) resources))))
+  [model]
+  (let [resources-triples (flatten-1 (model-pattern-apply model [[?s rdf:type rdfs:Class]]))
+        resources (map (fn [[resource _p _o]] (str resource)) resources-triples)]
+    (map (fn [resource] (parse-rdf-schema-from-model model resource)) resources)))
 
 ;; RDFS schema
 

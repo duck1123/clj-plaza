@@ -26,88 +26,88 @@
 
 (defn find-sesame-datatype
   "Finds the right datatype object from the string representation"
-  ([literal]
-     (let [lit (let [literal-str (keyword-to-string literal)]
-                 (if (.startsWith literal-str "http://")
-                   (aget (.split literal-str "#") 1)
-                   literal))]
-       (cond
-        (= "xmlliteral" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"
-        (= "anyuri" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#anyURI"
-        (= "boolean" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#boolean"
-        (= "byte" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#byte"
-        (= "date" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#date"
-        (= "datetime" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#dateTime"
-        (= "decimal" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#decimal"
-        (= "double" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#double"
-        (= "float" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#float"
-        (= "int" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#int"
-        (= "integer" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#integer"
-        (= "long" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#long"
-        (= "string" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#string"
-        :else literal))))
+  [literal]
+  (let [lit (let [literal-str (keyword-to-string literal)]
+              (if (.startsWith literal-str "http://")
+                (aget (.split literal-str "#") 1)
+                literal))]
+    (cond
+     (= "xmlliteral" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"
+     (= "anyuri" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#anyURI"
+     (= "boolean" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#boolean"
+     (= "byte" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#byte"
+     (= "date" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#date"
+     (= "datetime" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#dateTime"
+     (= "decimal" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#decimal"
+     (= "double" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#double"
+     (= "float" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#float"
+     (= "int" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#int"
+     (= "integer" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#integer"
+     (= "long" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#long"
+     (= "string" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#string"
+     :else literal)))
 
 (defn sesame-typed-literal-tojava
   "Transforms a sesame typed literal into the equivalente Java object"
-  ([lit]
-     (cond
-      (= "http://www.w3.org/2001/XMLSchema#boolean" (str (.getDatatype lit))) (.booleanValue lit)
-      (= "http://www.w3.org/2001/XMLSchema#byte" (str (.getDatatype lit))) (.byteValue lit)
-      (= "http://www.w3.org/2001/XMLSchema#date" (str (.getDatatype lit))) (.calendarValue lit)
-      (= "http://www.w3.org/2001/XMLSchema#dateTime" (str (.getDatatype lit))) (.calendarValue lit)
-      (= "http://www.w3.org/2001/XMLSchema#decimal" (str (.getDatatype lit))) (.decimalValue lit)
+  [lit]
+  (cond
+   (= "http://www.w3.org/2001/XMLSchema#boolean" (str (.getDatatype lit))) (.booleanValue lit)
+   (= "http://www.w3.org/2001/XMLSchema#byte" (str (.getDatatype lit))) (.byteValue lit)
+   (= "http://www.w3.org/2001/XMLSchema#date" (str (.getDatatype lit))) (.calendarValue lit)
+   (= "http://www.w3.org/2001/XMLSchema#dateTime" (str (.getDatatype lit))) (.calendarValue lit)
+   (= "http://www.w3.org/2001/XMLSchema#decimal" (str (.getDatatype lit))) (.decimalValue lit)
 
-      (= "http://www.w3.org/2001/XMLSchema#double" (str (.getDatatype lit))) (.doubleValue lit)
-      (= "http://www.w3.org/2001/XMLSchema#float" (str (.getDatatype lit))) (.floatValue lit)
-      (= "http://www.w3.org/2001/XMLSchema#int" (str (.getDatatype lit))) (.intValue lit)
-      (= "http://www.w3.org/2001/XMLSchema#integer" (str (.getDatatype lit))) (.integerValue lit)
-      (= "http://www.w3.org/2001/XMLSchema#long" (str (.getDatatype lit))) (.longValue lit)
-      (= "http://www.w3.org/2001/XMLSchema#string" (str (.getDatatype lit))) (.stringValue lit)
-      true (.stringValue lit))))
+   (= "http://www.w3.org/2001/XMLSchema#double" (str (.getDatatype lit))) (.doubleValue lit)
+   (= "http://www.w3.org/2001/XMLSchema#float" (str (.getDatatype lit))) (.floatValue lit)
+   (= "http://www.w3.org/2001/XMLSchema#int" (str (.getDatatype lit))) (.intValue lit)
+   (= "http://www.w3.org/2001/XMLSchema#integer" (str (.getDatatype lit))) (.integerValue lit)
+   (= "http://www.w3.org/2001/XMLSchema#long" (str (.getDatatype lit))) (.longValue lit)
+   (= "http://www.w3.org/2001/XMLSchema#string" (str (.getDatatype lit))) (.stringValue lit)
+   true (.stringValue lit)))
 
 (defn- translate-plaza-format
   "Translates an string representation of a RDF format to the sesame object"
-  ([format]
-     (cond (= format "RDF/XML")  RDFFormat/RDFXML
-           (= format "N-TRIPLE")  RDFFormat/NTRIPLES
-           (= format "N3")  RDFFormat/N3
-           (= format "TURTLE")  RDFFormat/TURTLE
-           (= format "TTL")  RDFFormat/TURTLE
-           (= format "XHTML")  :todo
-           (= format "HTML")  :todo
-           (= format "TRIG")  RDFFormat/TRIG
-           (= format "TRIX")  RDFFormat/TRIX
-           true      RDFFormat/RDFXML)))
+  [format]
+  (cond (= format "RDF/XML")  RDFFormat/RDFXML
+        (= format "N-TRIPLE")  RDFFormat/NTRIPLES
+        (= format "N3")  RDFFormat/N3
+        (= format "TURTLE")  RDFFormat/TURTLE
+        (= format "TTL")  RDFFormat/TURTLE
+        (= format "XHTML")  :todo
+        (= format "HTML")  :todo
+        (= format "TRIG")  RDFFormat/TRIG
+        (= format "TRIX")  RDFFormat/TRIX
+        true      RDFFormat/RDFXML))
 
 ;; SPARQL
 
 (defn- process-model-query-result
   "Transforms a query result into a dicitionary of bindings"
-  ([model result]
-     (let [vars (iterator-seq (.iterator result))]
-       (reduce (fn [acum item] (assoc acum (keyword (str "?" (.getName item))) (parse-sesame-object model (.getValue item)))) {} vars))))
+  [model result]
+  (let [vars (iterator-seq (.iterator result))]
+    (reduce (fn [acum item] (assoc acum (keyword (str "?" (.getName item))) (parse-sesame-object model (.getValue item)))) {} vars)))
 
 (defn- model-query-fn
   "Queries a model and returns a map of bindings"
-  ([model connection query]
-     (let [query-string (if (string? query) query (str (build-query *sparql-framework* query)))]
-       ;(println (str "QUERYING SESAME WITH: " query-string))
-       (let [tuple-query (.prepareTupleQuery connection org.openrdf.query.QueryLanguage/SPARQL query-string)
-             result (.evaluate tuple-query)]
-         (loop [acum []
-                should-continue (.hasNext result)]
-           (if should-continue
-             (recur (conj acum (process-model-query-result model (.next result)))
-                    (.hasNext result))
-             acum))))))
+  [model connection query]
+  (let [query-string (if (string? query) query (str (build-query *sparql-framework* query)))]
+                                        ;(println (str "QUERYING SESAME WITH: " query-string))
+    (let [tuple-query (.prepareTupleQuery connection org.openrdf.query.QueryLanguage/SPARQL query-string)
+          result (.evaluate tuple-query)]
+      (loop [acum []
+             should-continue (.hasNext result)]
+        (if should-continue
+          (recur (conj acum (process-model-query-result model (.next result)))
+                 (.hasNext result))
+          acum)))))
 
 (defn- model-query-triples-fn
   "Queries a model and returns a list of triple sets with results binding variables in que query pattern"
-  ([model connection query-or-string]
-     (let [query (if (string? query-or-string) (sparql-to-query query-or-string) query-or-string)
-           query-string (if (string? query-or-string) query-or-string (str (build-query *sparql-framework* query-or-string)))
-           results (model-query-fn model connection query-string)]
-       (map #(pattern-bind (:pattern query) %1) results))))
+  [model connection query-or-string]
+  (let [query (if (string? query-or-string) (sparql-to-query query-or-string) query-or-string)
+        query-string (if (string? query-or-string) query-or-string (str (build-query *sparql-framework* query-or-string)))
+        results (model-query-fn model connection query-string)]
+    (map #(pattern-bind (:pattern query) %1) results)))
 
 
 ;; Sesame implementation
@@ -355,26 +355,28 @@
 
 (defn- parse-sesame-object
   "Parses any Sesame relevant object into its plaza equivalent type"
-  ([model sesame]
-     (cond (instance? org.openrdf.model.URI sesame) (create-resource model (str sesame))
-           (instance? org.openrdf.model.BNode sesame) (create-blank-node model (str (.getID sesame)))
-           (instance? org.openrdf.model.Literal sesame) (if (or (nil? (.getDatatype sesame))
-                                                                (= (.getDatatype sesame) "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"))
-                                                          (create-literal model (.stringValue sesame) (.getLanguage sesame))
-                                                          (create-typed-literal model (sesame-typed-literal-tojava sesame) (str (.getDatatype sesame))))
-           true (throw (Exception. (str "Unable to parse object " sesame " of type " (class sesame)))))))
+  [model sesame]
+  (cond (instance? org.openrdf.model.URI sesame) (create-resource model (str sesame))
+        (instance? org.openrdf.model.BNode sesame) (create-blank-node model (str (.getID sesame)))
+        (instance? org.openrdf.model.Literal sesame) (if (or (nil? (.getDatatype sesame))
+                                                             (= (.getDatatype sesame) "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"))
+                                                       (create-literal model (.stringValue sesame) (.getLanguage sesame))
+                                                       (create-typed-literal model (sesame-typed-literal-tojava sesame) (str (.getDatatype sesame))))
+        true (throw (Exception. (str "Unable to parse object " sesame " of type " (class sesame))))))
 
 
 ;; Initialization
 
 (defmethod build-model [:sesame]
-  ([& options] (let [repo (SailRepository. (MemoryStore.))]
-                 (.initialize repo)
-                 (plaza.rdf.implementations.sesame.SesameModel. repo))))
+  [& options]
+  (let [repo (SailRepository. (MemoryStore.))]
+    (.initialize repo)
+    (plaza.rdf.implementations.sesame.SesameModel. repo)))
 
 (defn init-sesame-framework
   "Setup all the root bindings to use Plaza with the Sesame framework. This function must be called
    before start using Plaza"
-  ([] (alter-root-model (build-model :sesame))
-      (alter-root-sparql-framework (plaza.rdf.implementations.sesame.SesameSparqlFramework.))
-      (alter-root-model-builder-fn :sesame)))
+  []
+  (alter-root-model (build-model :sesame))
+  (alter-root-sparql-framework (plaza.rdf.implementations.sesame.SesameSparqlFramework.))
+  (alter-root-model-builder-fn :sesame))

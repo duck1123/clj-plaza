@@ -33,30 +33,30 @@
 
 (defn- process-model-query-result
   "Transforms a query result into a dicitionary of bindings"
-  ([model result]
-     (let [vars (iterator-seq (.varNames result))]
-       (reduce (fn [acum item] (assoc acum (keyword (str "?" item)) (parse-jena-object model (.get result item)))) {} vars))))
+  [model result]
+  (let [vars (iterator-seq (.varNames result))]
+    (reduce (fn [acum item] (assoc acum (keyword (str "?" item)) (parse-jena-object model (.get result item)))) {} vars)))
 
 (defn- model-query-fn
   "Queries a model and returns a map of bindings"
-  ([model query query-string]
-;     (let [query (if (string? query-or-string) (sparql-to-query query-or-string) query-or-string)
-;           query-string (if (string? query-or-string) query-or-string (str (build-query *sparql-framework* query)))]
-;     (println (str "QUERYING JENA WITH:\r\n" query-string))
-     (model-critical-read model
-                          (let [qexec (QueryExecutionFactory/create query-string (to-java model))
-                          ;     (let [qexec (QueryExecutionFactory/create (build-query query)  @model)
-                                results (iterator-seq (cond (= (:kind query) :select) (.execSelect qexec)))]
-;                                _results (println (str "BINDING RESULTS: " results))]
-                            (map #(process-model-query-result model %1) results)))))
+  [model query query-string]
+                                        ;     (let [query (if (string? query-or-string) (sparql-to-query query-or-string) query-or-string)
+                                        ;           query-string (if (string? query-or-string) query-or-string (str (build-query *sparql-framework* query)))]
+                                        ;     (println (str "QUERYING JENA WITH:\r\n" query-string))
+  (model-critical-read model
+                       (let [qexec (QueryExecutionFactory/create query-string (to-java model))
+                                        ;     (let [qexec (QueryExecutionFactory/create (build-query query)  @model)
+                             results (iterator-seq (cond (= (:kind query) :select) (.execSelect qexec)))]
+                                        ;                                _results (println (str "BINDING RESULTS: " results))]
+                         (map #(process-model-query-result model %1) results))))
 
 (defn- model-query-triples-fn
   "Queries a model and returns a list of triple sets with results binding variables in que query pattern"
-  ([model query-or-string]
-     (let [query (if (string? query-or-string) (sparql-to-query query-or-string) query-or-string)
-           query-string (if (string? query-or-string) query-or-string (str (build-query *sparql-framework* query-or-string)))
-           results (model-query-fn model query query-string)]
-       (map #(pattern-reject-unbound (pattern-bind (:pattern query) %1)) results))))
+  [model query-or-string]
+  (let [query (if (string? query-or-string) (sparql-to-query query-or-string) query-or-string)
+        query-string (if (string? query-or-string) query-or-string (str (build-query *sparql-framework* query-or-string)))
+        results (model-query-fn model query query-string)]
+    (map #(pattern-reject-unbound (pattern-bind (:pattern query) %1)) results)))
 
 
 ;; JENA implementation
@@ -167,7 +167,7 @@
 (deftype JenaModel [mod]
   JavaObjectWrapper
   (to-java [model] mod)
-  
+
   RDFModel
   (create-resource [model ns local] (.createResource mod (expand-ns ns local)))
   (create-resource [model uri]
@@ -272,7 +272,7 @@
                                      (.read mod stream *rdf-ns* format))))
                  model))
   (output-string  [model writer format]
-                  (critical-read model (fn [] 
+                  (critical-read model (fn []
                                          (try
                                            (let [existing-prefixes (.getNsPrefixMap mod)
                                                  new-map @*rdf-ns-table*
@@ -285,7 +285,7 @@
   (query [model query] (model-query-fn model query (str (build-query *sparql-framework* query))))
   (query-triples [model query] (model-query-triples-fn model query))
 
-  
+
   RDFDatatypeMapper
   (find-datatype [model literal] (find-jena-datatype literal))
 
@@ -307,28 +307,29 @@
 
 (defn parse-jena-object
   "Parses any Jena relevant object into its plaza equivalent type"
-  ([model jena]
-     (if (instance? com.hp.hpl.jena.rdf.model.impl.ResourceImpl jena)
-       (if (.isAnon jena)
-         (create-blank-node model (str (.getId jena)))
-         (create-resource model (str jena)))
-       (if (instance? com.hp.hpl.jena.rdf.model.impl.PropertyImpl jena)
-         (create-property model (str jena))
-         (if (instance? com.hp.hpl.jena.rdf.model.Literal jena)
-           (if (or (nil? (.getDatatypeURI jena))
-                   (= (.getDatatypeURI jena) "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"))
-             (create-literal model (.getValue jena) (.getLanguage jena))
-             (create-typed-literal model (.getValue jena) (.getDatatypeURI jena)))
-           (throw (Exception. (str "Unable to parse object " jena " of type " (class jena)))))))))
+  [model jena]
+  (if (instance? com.hp.hpl.jena.rdf.model.impl.ResourceImpl jena)
+    (if (.isAnon jena)
+      (create-blank-node model (str (.getId jena)))
+      (create-resource model (str jena)))
+    (if (instance? com.hp.hpl.jena.rdf.model.impl.PropertyImpl jena)
+      (create-property model (str jena))
+      (if (instance? com.hp.hpl.jena.rdf.model.Literal jena)
+        (if (or (nil? (.getDatatypeURI jena))
+                (= (.getDatatypeURI jena) "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"))
+          (create-literal model (.getValue jena) (.getLanguage jena))
+          (create-typed-literal model (.getValue jena) (.getDatatypeURI jena)))
+        (throw (Exception. (str "Unable to parse object " jena " of type " (class jena))))))))
 
 ;; Initialization
 
 (defmethod build-model [:jena]
-  ([& options] (plaza.rdf.implementations.jena.JenaModel. (ModelFactory/createDefaultModel))))
+  [& options] (plaza.rdf.implementations.jena.JenaModel. (ModelFactory/createDefaultModel)))
 
 (defn init-jena-framework
   "Setup all the root bindings to use Plaza with the Jena framework. This function must be called
    before start using Plaza"
-  ([] (alter-root-model (build-model :jena))
-      (alter-root-sparql-framework (plaza.rdf.implementations.jena.JenaSparqlFramework.))
-      (alter-root-model-builder-fn :jena)))
+  []
+  (alter-root-model (build-model :jena))
+  (alter-root-sparql-framework (plaza.rdf.implementations.jena.JenaSparqlFramework.))
+  (alter-root-model-builder-fn :jena))
