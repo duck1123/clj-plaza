@@ -132,7 +132,7 @@
 
 (deftest test-build-filters-2
   (let [framework (plaza.rdf.implementations.jena.JenaSparqlFramework.)
-        gt (.toString (build-filter framework (make-filter :> :?x (d 3))))
+        gt (.toString (build-filter framework (make-filter :> :?x (d (int 3)))))
         gt-2 (.toString (build-filter framework (make-filter :> :?x (make-filter :bound :?y))))]
     (is (= gt "( ?x > \"3\"^^xsd:int )"))
     (is (= gt-2 "( ?x > bound(?y) )"))))
