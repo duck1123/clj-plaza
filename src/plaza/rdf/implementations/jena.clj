@@ -132,7 +132,8 @@
   (hashCode [resource]
     (.hashCode (resource-id resource)))
   (equals [resource other-resource]
-    (= (resource-id resource) (resource-id other-resource))))
+    (and (= (class resource) (class other-resource))
+         (= (resource-id resource) (resource-id other-resource)))))
 
 
 (deftype JenaBlank [res]
@@ -252,7 +253,8 @@
   (hashCode [resource]
     (.hashCode (resource-id resource)))
   (equals [resource other-resource]
-    (= (resource-id resource) (resource-id other-resource))))
+    (and (= (class resource) (class other-resource))
+         (= (resource-id resource) (resource-id other-resource)))))
 
 (deftype JenaProperty [res]
   RDFResource RDFNode RDFDatatypeMapper JavaObjectWrapper RDFPrintable
@@ -289,7 +291,8 @@
   (hashCode [resource]
     (.hashCode (resource-id resource)))
   (equals [resource other-resource]
-    (= (resource-id resource) (resource-id other-resource))))
+    (and (= (class resource) (class other-resource))
+         (= (resource-id resource) (resource-id other-resource)))))
 
 
 (deftype JenaModel [mod]

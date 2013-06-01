@@ -145,7 +145,8 @@
   (toString [resource]
     (str res))
   (equals [resource other-resource]
-    (= (resource-id resource) (resource-id other-resource)))
+    (and (= (class resource) (class other-resource))
+         (= (resource-id resource) (resource-id other-resource))))
   (hashCode [resource]
     (.hashCode (resource-id resource))))
 
@@ -304,7 +305,8 @@
   (hashCode [resource]
     (.hashCode (resource-id resource)))
   (equals [resource other-resource]
-    (= (resource-id resource) (resource-id other-resource))))
+    (and (= (class resource) (class other-resource))
+         (= (resource-id resource) (resource-id other-resource)))))
 
 
 (deftype SesameModel [mod]
