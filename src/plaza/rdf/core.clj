@@ -184,7 +184,7 @@
   "Provided a pair [ns local] tries to expand the ns with the information in the rdf-ns registry"
   [ns local]
   (let [registry-ns (find-ns-registry ns)
-        expanded-ns (keyword->string (if (nil? registry-ns) ns registry-ns))]
+        expanded-ns (keyword->string (or registry-ns ns))]
     (if (.startsWith expanded-ns "http")
       (str expanded-ns (keyword->string local))
       (throw (Exception. (str "Unknown RDF namespace " expanded-ns " with local part " local))))))
