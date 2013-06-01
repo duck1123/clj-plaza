@@ -222,32 +222,29 @@
 (defn sparql->pattern-filters*
   [elem]
   (let [pattern-els (if (instance? ElementOptional elem)
-                                (.patternElts (first (.getElements (.getOptionalElement elem))))
-                                (if (instance? ElementFilter elem)
-                                  (.iterator [elem])
-                                  (.patternElts elem)))
-                  is-optional (if (instance? ElementOptional elem)
-                                true
-                                false)]
-              (loop [should-continue (.hasNext pattern-els)
-                     acum []]
-                (if should-continue
-                  (let [next-elt (.next pattern-els)]
-                    (if (instance? ElementFilter next-elt)
-                      ;; This is a filter
-                      (recur (.hasNext pattern-els)
-                             (conj acum (with-meta (parse-filter-expr (.getExpr next-elt))
-                                          {:filter true
-                                           :optional is-optional})))
-                      ;; A regular (maybe optional) expression
-                      (recur (.hasNext pattern-els)
-                             (conj acum
-                                   (with-meta [(parse-pattern-atom (.getSubject next-elt) :subject)
-                                               (parse-pattern-atom (.getPredicate next-elt) :predicate)
-                                               (parse-pattern-atom (.getObject next-elt) :object)]
-                                     {:optional is-optional
-                                      :filter false})))))
-                  acum))))
+                      (.patternElts (first (.getElements (.getOptionalElement elem))))
+                      (if (instance? ElementFilter elem)
+                        (.iterator [elem])
+                        (.patternElts elem)))
+        optional? (instance? ElementOptional elem)]
+    (loop [should-continue (.hasNext pattern-els)
+           acum []]
+      (if should-continue
+        (let [next-elt (.next pattern-els)]
+          (if (instance? ElementFilter next-elt)
+            ;; This is a filter
+            (recur (.hasNext pattern-els)
+                   (conj acum (with-meta (parse-filter-expr (.getExpr next-elt))
+                                {:filter true
+                                 :optional optional?})))
+            ;; A regular (maybe optional) expression
+            (recur (.hasNext pattern-els)
+                   (conj acum (with-meta [(parse-pattern-atom (.getSubject next-elt) :subject)
+                                          (parse-pattern-atom (.getPredicate next-elt) :predicate)
+                                          (parse-pattern-atom (.getObject next-elt) :object)]
+                                {:optional optional?
+                                 :filter false})))))
+        acum))))
 
 (defn sparql->pattern-filters
   "Parses a SPARQL query and transform it into a pattern and some filters"
