@@ -94,10 +94,7 @@
                 (clear-agent-errors agent))
               (throw (Exception. error-text)))
           (recur))
-        (do
-          (if (= res false)
-            (recur)
-            agent))))))
+        (if res agent (recur))))))
 
 (defn thread-id
   "Returns the ID of the current thread"
@@ -132,6 +129,6 @@
 (defn extract-local-part-uri
   [uri]
   (let [uri-str (str uri)]
-    (if (not (= (.indexOf uri-str "#") -1))
+    (if (not= (.indexOf uri-str "#") -1)
       (aget (.split uri-str "#") 1)
       (first (reverse (vec (.split uri-str "/")))))))

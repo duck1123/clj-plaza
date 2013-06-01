@@ -88,7 +88,7 @@
   "Transforms a XMLSchema datatype URI into a symbol representing the type"
   [literal]
   (let [lit (let [literal-str (keyword-to-string literal)]
-              (if (and (.startsWith literal-str "http://") (not (= -1 (.indexOf literal-str "#"))))
+              (if (and (.startsWith literal-str "http://") (not= -1 (.indexOf literal-str "#")))
                 (aget (.split literal-str "#") 1)
                 literal))]
     (condp = lit
@@ -372,7 +372,7 @@
                                 :optional []}
                                pattern)
         built-pattern (do
-                        (when (not (.isEmpty (:optional built-patterns)))
+                        (when-not (.isEmpty (:optional built-patterns))
                           (doseq [optg (:optional built-patterns)]
                             (.addElement (:building built-patterns) (com.hp.hpl.jena.sparql.syntax.ElementOptional. optg))))
                         (:building built-patterns))
