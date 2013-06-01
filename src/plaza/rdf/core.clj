@@ -522,30 +522,32 @@
 
 (defn parse-format
   [format]
-  (cond (= (.toLowerCase (keyword-to-string format)) "xml") "RDF/XML"
-        (= (.toLowerCase (keyword-to-string format)) "xml-abbrev") "RDF/XML-ABBREV"
-        (= (.toLowerCase (keyword-to-string format)) "ntriple") "N-TRIPLE"
-        (= (.toLowerCase (keyword-to-string format)) "n3") "N3"
-        (= (.toLowerCase (keyword-to-string format)) "ttl") "TURTLE"
-        (= (.toLowerCase (keyword-to-string format)) "turtle") "TTL"
-        (= (.toLowerCase (keyword-to-string format)) "xhtml") "XHTML"
-        (= (.toLowerCase (keyword-to-string format)) "html") "HTML"
-        (= (.toLowerCase (keyword-to-string format)) "trig") "TRIG"
-        (= (.toLowerCase (keyword-to-string format)) "trix") "TRIX"
-        true "RDF/XML"))
+  (condp =  (.toLowerCase (name format))
+    "xml" "RDF/XML"
+    "xml-abbrev" "RDF/XML-ABBREV"
+    "ntriple" "N-TRIPLE"
+    "n3" "N3"
+    "ttl" "TURTLE"
+    "turtle" "TTL"
+    "xhtml" "XHTML"
+    "html" "HTML"
+    "trig" "TRIG"
+    "trix" "TRIX"
+    "RDF/XML"))
 
 (defn valid-format
   [format]
-  (cond (= (.toLowerCase (keyword-to-string format)) "xml") true
-        (= (.toLowerCase (keyword-to-string format)) "ntriple") true
-        (= (.toLowerCase (keyword-to-string format)) "n3") true
-        (= (.toLowerCase (keyword-to-string format)) "ttl") true
-        (= (.toLowerCase (keyword-to-string format)) "turtle") true
-        (= (.toLowerCase (keyword-to-string format)) "xhtml") true
-        (= (.toLowerCase (keyword-to-string format)) "html") true
-        (= (.toLowerCase (keyword-to-string format)) "trig") true
-        (= (.toLowerCase (keyword-to-string format)) "trix") true
-        true false))
+  (condp =  (.toLowerCase (name format))
+    "xml" true
+    "ntriple" true
+    "n3" true
+    "ttl" true
+    "turtle" true
+    "xhtml" true
+    "html" true
+    "trig" true
+    "trix" true
+    false))
 
 
 (defn optional
