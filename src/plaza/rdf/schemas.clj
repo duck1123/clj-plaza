@@ -236,9 +236,13 @@
 (defn parse-rdfs-schemas-from-model
   "Builds RDFS definition of resources from the set of triples in a RDF model"
   [model]
-  (let [resources-triples (flatten-1 (model-pattern-apply model [[?s rdf:type rdfs:Class]]))
-        resources (map (fn [[resource _p _o]] (str resource)) resources-triples)]
-    (map (fn [resource] (parse-rdf-schema-from-model model resource)) resources)))
+  (let [resources-triples (->> [[?s rdf:type rdfs:Class]]
+                               (model-pattern-apply model)
+                               flatten-1)
+        resources (map (fn [[resource _p _o]] (str resource))
+                       resources-triples)]
+    (map (fn [resource] (parse-rdf-schema-from-model model resource))
+         resources)))
 
 ;; RDFS schema
 
