@@ -494,7 +494,7 @@
         (let [t (nth triples idx)
               key (to-string (subject-from-triple t))
               acump (if (get acum key) (assoc acum key (conj (get acum key) t)) (assoc acum key [t]))]
-          (recur acump max (+ idx 1)))
+          (recur acump max (inc idx)))
         (vals acum)))))
 
 (defn find-resource-uris
@@ -508,7 +508,7 @@
         (let [t (nth triples idx)
               key (to-string (subject-from-triple t))
               acump (if (empty? (filter #(= key %1) acum)) (conj acum key) acum)]
-          (recur acump max (+ idx 1)))
+          (recur acump max (inc idx)))
         acum))))
 
 

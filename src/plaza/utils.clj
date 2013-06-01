@@ -47,11 +47,11 @@
                                   params-count 0]
                              (if (< params-count params-max)
                                (recur (str acum " " (aget params params-count))
-                                      (+ params-count 1))
+                                      (inc params-count))
                                acum))
                            " ) : " return-type)]
           (println (str to-show))
-          (recur (+ 1 count)))))))
+          (recur (inc count)))))))
 
 (defn collect-java-implemented-interfaces
   [obj]
@@ -60,7 +60,7 @@
     (loop [count 0
            acum []]
       (if (< count max)
-        (recur (+ count 1)
+        (recur (inc 1)
                (conj acum (aget is count)))
         acum))))
 

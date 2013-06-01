@@ -386,7 +386,7 @@
         (when (< idx (count (:vars query)))
           (do
             (.addResultVar built-query (keyword-to-variable (nth (:vars query) idx)))
-            (recur (+ idx 1)))))
+            (recur (inc idx)))))
       (.setQueryPattern built-query built-pattern)
 
       (condp = (:kind query)
