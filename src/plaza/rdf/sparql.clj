@@ -417,15 +417,23 @@ with results binding variables in que query pattern"
 (defn- subject-vars
   [pattern]
   (reduce (fn [ac [s p o]]
-            (if (is-var-expr *sparql-framework* s) (conj ac s) ac)) [] pattern))
+            (if (is-var-expr *sparql-framework* s)
+              (conj ac s) ac))
+          [] pattern))
 
 (defn- predicate-vars
   [pattern]
-  (reduce (fn [ac [s p o]] (if (is-var-expr *sparql-framework* p) (conj ac p) ac)) [] pattern))
+  (reduce (fn [ac [s p o]]
+            (if (is-var-expr *sparql-framework* p)
+              (conj ac p) ac))
+          [] pattern))
 
 (defn- object-vars
   [pattern]
-  (reduce (fn [ac [s p o]] (if (is-var-expr *sparql-framework* o) (conj ac o) ac)) [] pattern))
+  (reduce (fn [ac [s p o]]
+            (if (is-var-expr *sparql-framework* o)
+              (conj ac o) ac))
+          [] pattern))
 
 (defn not-empty-column-vars
   [pattern]
