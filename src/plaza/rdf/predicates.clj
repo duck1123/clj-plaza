@@ -143,27 +143,18 @@
 
 (defn is-bnode?
   "Matches a blank node"
-  ([]
-     (fn [triple atom]
-       (if (or (string? atom)
-               (keyword? atom))
-         false
+  []
+  (fn [triple atom]
+    (and (not (or (string? atom)
+                  (keyword? atom)))
          (bnode? atom))))
-  ([id]
-     (fn [triple atom]
-       (and (not (or (string? atom) (keyword? atom)))
-            (instance? plaza.rdf.core.RDFResource atom)
-            (bnode? atom)
-            (= (name id) (str (resource-id atom)))))))
 
 (defn is-literal?
   "Matches a literal with a certain literal value"
   []
   (fn [triple atom]
-    (cond (and (instance? plaza.rdf.core.RDFResource atom)
-               (rdf/literal? atom))
-          true
-          true false)))
+    (and (instance? plaza.rdf.core.RDFResource atom)
+         (rdf/literal? atom))))
 
 (defn is-resource?
   "Matches a literal with a certain literal value"
@@ -193,6 +184,15 @@
          (= (find-datatype *rdf-model* (literal-datatype-uri atom))
             (find-datatype *rdf-model* data-uri)))))
 
+(defn matches-bnode?
+  "Matches a blank node"
+  [id]
+  (fn [triple atom]
+    (and (not (or (string? atom) (keyword? atom)))
+         (instance? plaza.rdf.core.RDFResource atom)
+         (bnode? atom)
+         (= (name id) (str (resource-id atom))))))
+
 (defn matches-literal?
   "Matches the value or the value and language of a literal"
   ([val]
@@ -211,19 +211,18 @@
   "Matches a literal with a certain literal value"
   [lit]
   (fn [triple atom]
-    (cond (rdf/literal? atom)
-          (= (literal-lexical-form atom) (str lit))
-          true false)))
+    (and (rdf/literal? atom)
+         (= (literal-lexical-form atom)
+            (str lit)))))
 
 (defn matches-qname-local?
   "Matches a URI or curie against a triple atom"
   [local]
   (fn [triple atom]
-    (cond (or (keyword? atom)
-              (rdf/literal? atom))
-          false
-          true
-          (= (qname-local atom) (keyword-to-string local)))))
+    (and (not (or (keyword? atom)
+                  (rdf/literal? atom)))
+         (= (qname-local atom)
+            (keyword-to-string local)))))
 
 (defn matches-qname-prefix?
   "Matches a URI or curie against a triple atom"
