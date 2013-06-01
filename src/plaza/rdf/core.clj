@@ -151,11 +151,13 @@
 ;;; Namespaces
 
 ;; Dictionaries for data
-(def ^:dynamic *rdf-ns-table* (ref {:rdfs "http://www.w3.org/2000/01/rdf-schema#"
-                                    :rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#"}))
+(def ^:dynamic *rdf-ns-table*
+  (ref {:rdfs "http://www.w3.org/2000/01/rdf-schema#"
+        :rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#"}))
 
-(def ^:dynamic *rdf-ns-inverse-table* (ref {"http://www.w3.org/2000/01/rdf-schema#" :rdfs
-                                            "http://www.w3.org/1999/02/22-rdf-syntax-ns#" :rdf }))
+(def ^:dynamic *rdf-ns-inverse-table*
+  (ref {"http://www.w3.org/2000/01/rdf-schema#" :rdfs
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#" :rdf }))
 
 (defn register-rdf-ns
   "Add a registered namespace to the registry of namespaces"
