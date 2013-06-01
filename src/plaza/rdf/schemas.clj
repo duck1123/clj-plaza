@@ -62,72 +62,73 @@
 ;; Types
 (declare wrap-rdfs-schema)
 
-(deftype RDFSModel [this-uri super-types properties ranges] OntologyModel
-         (type-uri [this] this-uri)
+(deftype RDFSModel [this-uri super-types properties ranges]
+  OntologyModel
+  (type-uri [this] this-uri)
 
-         (super-type-uris [this] (conj super-types this-uri))
+  (super-type-uris [this] (conj super-types this-uri))
 
-         (add-property [this alias uri range] (let [prop-val (if (coll? uri) (apply rdf-resource uri) (rdf-resource uri))
-                                                    range-val (if (supported-datatype? range)
-                                                                {:kind :datatype :range (rdf-resource (datatype-uri range))}
-                                                                {:kind :resource :range (if (coll? range) (apply rdf-resource range) range)})
-                                                    propsp (assoc properties alias prop-val)
-                                                    rangesp (assoc ranges alias range-val)]
-                                                (wrap-rdfs-schema this-uri super-types propsp rangesp)))
+  (add-property [this alias uri range] (let [prop-val (if (coll? uri) (apply rdf-resource uri) (rdf-resource uri))
+                                             range-val (if (supported-datatype? range)
+                                                         {:kind :datatype :range (rdf-resource (datatype-uri range))}
+                                                         {:kind :resource :range (if (coll? range) (apply rdf-resource range) range)})
+                                             propsp (assoc properties alias prop-val)
+                                             rangesp (assoc ranges alias range-val)]
+                                         (wrap-rdfs-schema this-uri super-types propsp rangesp)))
 
-         (remove-property-by-uri [this uri] (let [alias (property-alias this uri)]
-                                              (if (nil? alias)
-                                                this
-                                                (let [propsp (dissoc properties alias)
-                                                      rangesp (dissoc ranges alias)]
-                                                  (wrap-rdfs-schema this-uri super-types propsp rangesp)))))
+  (remove-property-by-uri [this uri] (let [alias (property-alias this uri)]
+                                       (if (nil? alias)
+                                         this
+                                         (let [propsp (dissoc properties alias)
+                                               rangesp (dissoc ranges alias)]
+                                           (wrap-rdfs-schema this-uri super-types propsp rangesp)))))
 
-         (remove-property-by-alias [this alias] (if (nil? alias)
-                                                  this
-                                                  (let [propsp (dissoc properties alias)
-                                                        rangesp (dissoc ranges alias)]
-                                                    (wrap-rdfs-schema this-uri super-types propsp rangesp))))
+  (remove-property-by-alias [this alias] (if (nil? alias)
+                                           this
+                                           (let [propsp (dissoc properties alias)
+                                                 rangesp (dissoc ranges alias)]
+                                             (wrap-rdfs-schema this-uri super-types propsp rangesp))))
 
-         (toString [this] (str this-uri  " " properties))
+  (toString [this] (str this-uri  " " properties))
 
-         (to-pattern [this subject props] (let [subj (if (instance? plaza.rdf.core.RDFResource subject) subject (if (coll? subject) (apply rdf-resource subject) (rdf-resource subject) ))]
-                                            (build-pattern-for-model this-uri subj props properties)))
+  (to-pattern [this subject props] (let [subj (if (instance? plaza.rdf.core.RDFResource subject) subject (if (coll? subject) (apply rdf-resource subject) (rdf-resource subject) ))]
+                                     (build-pattern-for-model this-uri subj props properties)))
 
-         (to-pattern [this props] (build-pattern-for-model this-uri ?s props properties))
+  (to-pattern [this props] (build-pattern-for-model this-uri ?s props properties))
 
-         (to-map [this triples-or-vector] (let [triples (if (:triples (meta triples-or-vector)) triples-or-vector (make-triples triples-or-vector))]
-                                            (reduce (fn [ac it] (let [prop (str (resource-id (it properties)))
-                                                                      val (find-property prop triples)]
-                                                                  (if (nil? val) ac (assoc ac it (nth val 2)))))
-                                                    {}
-                                                    (keys properties))))
+  (to-map [this triples-or-vector] (let [triples (if (:triples (meta triples-or-vector)) triples-or-vector (make-triples triples-or-vector))]
+                                     (reduce (fn [ac it] (let [prop (str (resource-id (it properties)))
+                                                               val (find-property prop triples)]
+                                                           (if (nil? val) ac (assoc ac it (nth val 2)))))
+                                             {}
+                                             (keys properties))))
 
-         (property-uri [this alias] (alias properties))
+  (property-uri [this alias] (alias properties))
 
-         (property-range-description [this alias] (alias ranges))
+  (property-range-description [this alias] (alias ranges))
 
-         (property-alias [this uri] (first (filter #(= (str (get properties %1)) (str uri)) (keys properties))))
+  (property-alias [this uri] (first (filter #(= (str (get properties %1)) (str uri)) (keys properties))))
 
-         (parse-prop-value [this alias val] (let [{kind :kind range :range} (get ranges alias)]
-                                              (if (= kind :resource) (rdf-resource val)
-                                                  (.parse (find-jena-datatype (str range)) val))))
+  (parse-prop-value [this alias val] (let [{kind :kind range :range} (get ranges alias)]
+                                       (if (= kind :resource) (rdf-resource val)
+                                           (.parse (find-jena-datatype (str range)) val))))
 
-         (prop-value-to-triple-value [this alias val] (let [{kind :kind range :range} (get ranges alias)]
-                                                        (if (= kind :resource) (rdf-resource val)
-                                                            (let [jena-type (find-jena-datatype (str range))]
-                                                              (parse-literal-lexical (str "\"" val "\"^^<" (.getURI jena-type) ">"))))))
+  (prop-value-to-triple-value [this alias val] (let [{kind :kind range :range} (get ranges alias)]
+                                                 (if (= kind :resource) (rdf-resource val)
+                                                     (let [jena-type (find-jena-datatype (str range))]
+                                                       (parse-literal-lexical (str "\"" val "\"^^<" (.getURI jena-type) ">"))))))
 
-         (to-rdf-triples [this] (let [subject (rdf-resource (type-uri this))]
-                                  (let [pre-super-types (reduce (fn [ts k] (let [prop (rdf-resource (get properties k))
-                                                                                 range (:range (get ranges k))
-                                                                                 tsp (conj ts [prop (rdf-resource rdfs:range) (rdf-resource range)])]
-                                                                             (conj tsp [prop (rdf-resource rdfs:domain) subject])))
-                                                                [[subject (rdf-resource rdf:type) (rdf-resource rdfs:Class)]]
-                                                                (keys properties))
-                                        super-types-triples (map (fn [st] [subject (rdf-resource rdf:type) (rdf-resource st)]) super-types)]
-                                    (concat pre-super-types super-types-triples))))
+  (to-rdf-triples [this] (let [subject (rdf-resource (type-uri this))]
+                           (let [pre-super-types (reduce (fn [ts k] (let [prop (rdf-resource (get properties k))
+                                                                          range (:range (get ranges k))
+                                                                          tsp (conj ts [prop (rdf-resource rdfs:range) (rdf-resource range)])]
+                                                                      (conj tsp [prop (rdf-resource rdfs:domain) subject])))
+                                                         [[subject (rdf-resource rdf:type) (rdf-resource rdfs:Class)]]
+                                                         (keys properties))
+                                 super-types-triples (map (fn [st] [subject (rdf-resource rdf:type) (rdf-resource st)]) super-types)]
+                             (concat pre-super-types super-types-triples))))
 
-         (aliases [this] (keys properties)))
+  (aliases [this] (keys properties)))
 
 ;; Type constructor
 
