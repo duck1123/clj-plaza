@@ -19,7 +19,7 @@
 (defmacro declare-schemas-to-load
   [& body]
   `(let [to-load# (fn [] ~@body)]
-     (dosync (alter *vocabularies-to-load* (fn [old#] (conj old# to-load#))))))
+     (dosync (alter *vocabularies-to-load* #(conj % to-load#)))))
 
 (defn init-vocabularies
   []
@@ -169,7 +169,7 @@
                             (let [alias (if (nil? (get prop-map (:alias prop))) (:property prop) (:alias prop))]
                               (assoc acum alias (:range prop))))
                           {} props)]
-    (plaza.rdf.schemas.RDFSModel. typeuri (map #(type-uri %1) schemas) prop-map range-map)))
+    (plaza.rdf.schemas.RDFSModel. typeuri (map type-uri schemas) prop-map range-map)))
 
 ;; Utils
 

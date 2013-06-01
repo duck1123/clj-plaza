@@ -311,7 +311,7 @@
   [to-parse]
   (if (and (coll? (first to-parse))
            (= (count (first to-parse)) 3))
-    (map #(rdf-triple %1) to-parse)
+    (map rdf-triple to-parse)
     (if (= (count to-parse) 3)
       (let [[s p o] to-parse]
         [(triple-subject s)
@@ -382,7 +382,7 @@
          (vec (concat acum item))
          (conj acum item)))
      []
-     (map (fn [t] (rdf-triple t)) ts))
+     (map rdf-triple ts))
     {:triples true}))
 
 
