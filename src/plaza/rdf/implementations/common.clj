@@ -219,16 +219,9 @@
 
     (throw (Exception. (str "Trying to parse unknown/not supported filter: " expr)))))
 
-(defn sparql->pattern-filters
-  "Parses a SPARQL query and transform it into a pattern and some filters"
-  [sparql-string-or-query]
-  (let [query (if (string? sparql-string-or-query)
-                (QueryFactory/create sparql-string-or-query)
-                sparql-string-or-query)
-        query-pattern-els (.getElements (.getQueryPattern query))]
-    (flatten-1
-     (map (fn [elem]
-            (let [pattern-els (if (instance? ElementOptional elem)
+(defn sparql->pattern-filters*
+  [elem]
+  (let [pattern-els (if (instance? ElementOptional elem)
                                 (.patternElts (first (.getElements (.getOptionalElement elem))))
                                 (if (instance? ElementFilter elem)
                                   (.iterator [elem])
@@ -255,7 +248,16 @@
                                      {:optional is-optional
                                       :filter false})))))
                   acum))))
-          query-pattern-els))))
+
+(defn sparql->pattern-filters
+  "Parses a SPARQL query and transform it into a pattern and some filters"
+  [sparql-string-or-query]
+  (let [query (if (string? sparql-string-or-query)
+                (QueryFactory/create sparql-string-or-query)
+                sparql-string-or-query)
+        query-pattern-els (.getElements (.getQueryPattern query))]
+    (flatten-1
+     (map sparql->pattern-filters* query-pattern-els))))
 
 (defn parse-sparql->pattern-fn
   "Parses a SPARQL query and transform it into a pattern"
@@ -342,35 +344,34 @@
                           (to-string atom)
                           (str atom)))))))
 
+(defn build-query-fn*
+  [acum item]
+  (let [building (:building acum)
+        optional (:optional acum)
+        [s p o] item
+        triple (Triple/create (build-query-atom s)
+                              (build-query-atom p)
+                              (build-query-atom o))]
+    (if (:optional (meta item))
+      ;; add it to the optional elem
+      (let [optg (ElementGroup.)]
+        (.addTriplePattern optg triple)
+        {:building building
+         :optional (conj optional optg)})
+      ;; Is not an optional triple
+      (do (.addTriplePattern building triple)
+          {:building building
+           :optional optional}))))
+
 (defn build-query-fn
   "Transforms a query representation into a Jena Query object"
   [builder query]
   (let [built-query (Query.)
         pattern (:pattern query)
-        built-patterns (reduce
-                        (fn [acum item]
-                          (let [building (:building acum)
-                                optional (:optional acum)]
-                            (if (:optional (meta item))
-                              ;; add it to the optional elem
-                              (let [optg (ElementGroup.)]
-                                (.addTriplePattern optg
-                                                   (Triple/create (build-query-atom (nth item 0))
-                                                                  (build-query-atom (nth item 1))
-                                                                  (build-query-atom (nth item 2))))
-                                {:building building
-                                 :optional (conj optional optg)})
-                              ;; Is not an optional triple
-                              (do (.addTriplePattern building
-                                                     (Triple/create
-                                                      (build-query-atom (nth item 0))
-                                                      (build-query-atom (nth item 1))
-                                                      (build-query-atom (nth item 2))))
-                                  {:building building
-                                   :optional optional}))))
-                        {:building (ElementGroup.)
-                         :optional []}
-                        pattern)
+        built-patterns (reduce build-query-fn*
+                               {:building (ElementGroup.)
+                                :optional []}
+                               pattern)
         built-pattern (do
                         (when-not (.isEmpty (:optional built-patterns))
                           (doseq [optg (:optional built-patterns)]
