@@ -186,14 +186,14 @@
   [expr symbol]
   {:expression (keyword symbol)
    :kind :two-parts
-   :args [(parse-next-filter-expr (.. expr (getArg 1)))
-          (parse-next-filter-expr (.. expr (getArg 2)))]})
+   :args [(parse-next-filter-expr (.getArg expr 1))
+          (parse-next-filter-expr (.getArg expr 2))]})
 
 (defn- parse-filter-expr-1
   [expr symbol]
   {:expression (keyword symbol)
    :kind :one-part
-   :args [(parse-next-filter-expr (.. expr (getArg 1)))]})
+   :args [(parse-next-filter-expr (.getArg expr 1))]})
 
 
 (defn parse-filter-expr
@@ -229,11 +229,11 @@
   (let [query (if (string? sparql-string-or-query)
                 (QueryFactory/create sparql-string-or-query)
                 sparql-string-or-query)
-        query-pattern-els (.. query getQueryPattern getElements)]
+        query-pattern-els (.getElements (.getQueryPattern query))]
     (flatten-1
      (map (fn [elem]
             (let [pattern-els (if (instance? ElementOptional elem)
-                                (.. elem getOptionalElement getElements (get 0) patternElts)
+                                (.patternElts (first (.getElements (.getOptionalElement elem))))
                                 (if (instance? ElementFilter elem)
                                   (.iterator [elem])
                                   (.patternElts elem)))

@@ -314,38 +314,51 @@
   (to-java [model]
     mod)
   (create-resource [model ns local]
-    (plaza.rdf.implementations.sesame.SesameResource. (.. ValueFactoryImpl getInstance (createURI (expand-ns ns local)))))
+    (plaza.rdf.implementations.sesame.SesameResource.
+     (.createURI (ValueFactoryImpl/getInstance) (expand-ns ns local))))
   (create-resource [model uri]
     (if (instance? plaza.rdf.core.RDFResource uri)
       uri
       (if (.startsWith (keyword-to-string uri) "http://")
-        (plaza.rdf.implementations.sesame.SesameResource. (.. ValueFactoryImpl getInstance (createURI (keyword-to-string uri))))
-        (plaza.rdf.implementations.sesame.SesameResource. (.. ValueFactoryImpl getInstance (createURI (expand-ns *rdf-ns* (keyword-to-string uri))))))))
+        (plaza.rdf.implementations.sesame.SesameResource.
+         (.createURI (ValueFactoryImpl/getInstance) (keyword-to-string uri)))
+        (plaza.rdf.implementations.sesame.SesameResource.
+         (.createURI (ValueFactoryImpl/getInstance)
+                     (expand-ns *rdf-ns* (keyword-to-string uri)))))))
   (create-property [model ns local]
-    (plaza.rdf.implementations.sesame.SesameProperty. (.. ValueFactoryImpl getInstance (createURI (expand-ns ns local)))))
+    (plaza.rdf.implementations.sesame.SesameProperty.
+     (.createURI (ValueFactoryImpl/getInstance) (expand-ns ns local))))
   (create-property [model uri]
     (if (or (instance? plaza.rdf.implementations.sesame.SesameResource uri)
             (instance? plaza.rdf.implementations.sesame.SesameProperty uri))
-      (plaza.rdf.implementations.sesame.SesameProperty. (.. ValueFactoryImpl getInstance (createURI (to-string uri))))
+      (plaza.rdf.implementations.sesame.SesameProperty.
+       (.createURI (ValueFactoryImpl/getInstance) (to-string uri)))
       (if (.startsWith (keyword-to-string uri) "http://")
-        (plaza.rdf.implementations.sesame.SesameProperty. (.. ValueFactoryImpl getInstance (createURI (keyword-to-string uri))))
-        (plaza.rdf.implementations.sesame.SesameProperty. (.. ValueFactoryImpl getInstance (createURI (expand-ns *rdf-ns* (keyword-to-string uri))))))))
+        (plaza.rdf.implementations.sesame.SesameProperty.
+         (.createURI (ValueFactoryImpl/getInstance) (keyword-to-string uri)))
+        (plaza.rdf.implementations.sesame.SesameProperty.
+         (.createURI (ValueFactoryImpl/getInstance) (expand-ns *rdf-ns* (keyword-to-string uri)))))))
   (create-blank-node [model]
-    (plaza.rdf.implementations.sesame.SesameBlank. (.. ValueFactoryImpl getInstance (createBNode (str (.getTime (java.util.Date.)))))))
+    (plaza.rdf.implementations.sesame.SesameBlank.
+     (.createBNode (ValueFactoryImpl/getInstance) (str (.getTime (java.util.Date.))))))
   (create-blank-node [model id]
-    (plaza.rdf.implementations.sesame.SesameBlank. (.. ValueFactoryImpl getInstance (createBNode (keyword-to-string id)))))
+    (plaza.rdf.implementations.sesame.SesameBlank.
+     (.createBNode (ValueFactoryImpl/getInstance) (keyword-to-string id))))
   (create-literal [model lit]
-    (plaza.rdf.implementations.sesame.SesameLiteral. (.. ValueFactoryImpl getInstance (createLiteral lit))))
+    (plaza.rdf.implementations.sesame.SesameLiteral.
+     (.createLiteral (ValueFactoryImpl/getInstance) lit)))
   (create-literal [model lit lang]
-    (plaza.rdf.implementations.sesame.SesameLiteral. (.. ValueFactoryImpl getInstance (createLiteral lit (keyword-to-string lang)))))
+    (plaza.rdf.implementations.sesame.SesameLiteral.
+     (.createLiteral (ValueFactoryImpl/getInstance) lit (keyword-to-string lang))))
   (create-typed-literal [model lit]
-    (plaza.rdf.implementations.sesame.SesameTypedLiteral. (.. ValueFactoryImpl getInstance (createLiteral lit))))
+    (plaza.rdf.implementations.sesame.SesameTypedLiteral.
+     (.createLiteral (ValueFactoryImpl/getInstance) lit)))
   (create-typed-literal [model lit type]
     (plaza.rdf.implementations.sesame.SesameTypedLiteral.
-     (.. ValueFactoryImpl
-         getInstance (createLiteral
-                      (str lit)
-                      (.. ValueFactoryImpl getInstance (createURI (str (find-sesame-datatype type))))))))
+     (.createLiteral (ValueFactoryImpl/getInstance)
+                     (str lit)
+                     (.createURI (ValueFactoryImpl/getInstance)
+                                 (str (find-sesame-datatype type))))))
   (critical-write [model f]
     (let [connection (.getConnection mod)]
       (try

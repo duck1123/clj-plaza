@@ -35,7 +35,7 @@
 
 (defn show-java-methods
   [obj]
-  (let [ms (.. obj getClass getDeclaredMethods)
+  (let [ms (.getDeclaredMethods (.getClass obj))
         max (alength ms)]
     (loop [count 0]
       (when (< count max)
@@ -55,7 +55,7 @@
 
 (defn collect-java-implemented-interfaces
   [obj]
-  (let [is (.. obj getClass getInterfaces)
+  (let [is (.getInterfaces (.getClass obj))
         max (alength is)]
     (loop [count 0
            acum []]
@@ -120,10 +120,10 @@
   (let [sw (java.io.StringWriter.)
         pw (java.io.PrintWriter. sw)]
     (.print pw "[")
-    (.print pw (.. e getClass getName))
+    (.print pw (.getName (.getClass e)))
     (.print pw "] ")
-    (.print pw (. e getMessage))
-    (. e (printStackTrace pw))
+    (.print pw (.getMessage e))
+    (.printStackTrace e pw)
     (str sw)))
 
 (defn extract-local-part-uri
