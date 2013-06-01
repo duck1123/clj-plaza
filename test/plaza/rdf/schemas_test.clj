@@ -1,7 +1,11 @@
 (ns plaza.rdf.schemas-test
-  (:use [plaza.rdf core sparql schemas]
-        [plaza.rdf.implementations sesame]
-        [clojure.test]))
+  (:use clojure.test
+        plaza.rdf.core
+        plaza.rdf.implementations.sesame
+        plaza.rdf.schemas
+        plaza.rdf.sparql
+        midje.sweet)
+  (:require [clojure.tools.logging :as log]))
 
 (init-sesame-framework)
 (use 'plaza.rdf.vocabularies.foaf)

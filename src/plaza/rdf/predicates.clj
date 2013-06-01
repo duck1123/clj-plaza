@@ -3,8 +3,13 @@
 ;; @date 04.05.2010
 
 (ns plaza.rdf.predicates
-  (:use (plaza utils)
-        (plaza.rdf core sparql)))
+  (:use [plaza.rdf.core :only [*rdf-model* expand-ns find-datatype find-ns-registry
+                               is-blank is-literal is-resource literal-datatype-uri
+                               literal-language literal-lexical-form literal-value
+                               qname-local qname-prefix resource-id]]
+        [plaza.rdf.sparql :only [*sparql-framework* is-var-expr]]
+        [plaza.utils :only [keyword-to-string]])
+  (:require [plaza.rdf.core :as rdf]))
 
 ;; model value extraction
 

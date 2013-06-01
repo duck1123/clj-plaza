@@ -1,7 +1,10 @@
 (ns plaza.rdf.sparql-test-sesame
-  (:use [plaza.rdf predicates core sparql]
-        [plaza.rdf.implementations sesame]
-        [clojure.test]))
+  (:use clojure.test
+        [plaza.rdf.core :only [d rdf:type optional opt l make-triples defmodel
+                               model-add-triples to-string]]
+        plaza.rdf.implementations.sesame
+        plaza.rdf.predicates
+        plaza.rdf.sparql))
 
 ;; we'll test with sesame
 (init-sesame-framework)

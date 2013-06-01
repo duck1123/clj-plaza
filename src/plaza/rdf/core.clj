@@ -4,7 +4,8 @@
 
 
 (ns plaza.rdf.core
-  (:use (plaza utils)))
+  (:use plaza.utils)
+  (:require [clojure.tools.logging :as log]))
 
 ;; Axiomatic vocabulary
 

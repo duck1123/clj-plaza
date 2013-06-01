@@ -3,8 +3,10 @@
 ;; @date 12.05.2010
 
 (ns plaza.rdf.implementations.common
-  (:use [plaza.utils]
-        [plaza.rdf core sparql])
+  (:use plaza.rdf.core
+        plaza.rdf.sparql
+        plaza.utils)
+  (:require [clojure.tools.logging :as log])
   (:import com.hp.hpl.jena.datatypes.BaseDatatype
            com.hp.hpl.jena.datatypes.xsd.XSDDatatype
            com.hp.hpl.jena.datatypes.xsd.impl.XMLLiteralType

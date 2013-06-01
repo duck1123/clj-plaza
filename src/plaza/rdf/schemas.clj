@@ -3,11 +3,16 @@
 ;; @date 26.05.2010
 
 (ns plaza.rdf.schemas
-  (:use plaza.utils
-        (plaza.rdf core sparql predicates)
+  (:use [plaza.rdf.core :only [opt rdf:type resource-id rdf-resource
+                               make-triples rdfs:range rdfs:domain rdfs:Class
+                               rdfs:Resource]]
         plaza.rdf.implementations.common
-        [clojure.tools.logging :only [log]])
-  (:require clojure.set))
+        plaza.rdf.predicates
+        plaza.rdf.sparql
+        plaza.utils)
+  (:require clojure.set
+            [clojure.tools.logging :as log])
+  (:import plaza.rdf.core.RDFResource))
 
 (defonce ^:dynamic *vocabularies-to-load* (ref []))
 

@@ -3,21 +3,45 @@
 ;; @date 09.05.2010
 
 (ns plaza.rdf.implementations.jena
-  (:use [plaza.utils]
-        [plaza.rdf core sparql]
-        [plaza.rdf.implementations.common])
-  (:import (com.hp.hpl.jena.rdf.model ModelFactory)
-           (com.hp.hpl.jena.reasoner.rulesys RDFSRuleReasonerFactory)
-           (com.hp.hpl.jena.vocabulary ReasonerVocabulary)
-           (com.hp.hpl.jena.datatypes.xsd XSDDatatype)
-           (com.hp.hpl.jena.sparql.core Var)
-           (com.hp.hpl.jena.datatypes.xsd.impl XMLLiteralType)
-           (com.hp.hpl.jena.shared Lock)
-           (com.hp.hpl.jena.query QueryFactory QueryExecutionFactory DatasetFactory)
-           (com.hp.hpl.jena.sparql.syntax Element ElementGroup ElementOptional ElementFilter)
-           (com.hp.hpl.jena.graph Node Triple)
-           (com.hp.hpl.jena.sparql.expr E_Str E_Lang E_Datatype E_Bound E_IsIRI E_IsURI E_IsBlank E_IsLiteral E_GreaterThanOrEqual E_GreaterThan
-                                        E_LessThanOrEqual E_LessThan E_NotEquals E_Equals E_Subtract E_Add E_Multiply E_Divide)))
+  (:use plaza.utils
+        plaza.rdf.core
+        plaza.rdf.sparql
+        plaza.rdf.implementations.common)
+  (:require [clojure.tools.logging :as log])
+  (:import com.hp.hpl.jena.datatypes.xsd.XSDDatatype
+           com.hp.hpl.jena.datatypes.xsd.impl.XMLLiteralType
+           com.hp.hpl.jena.graph.Node
+           com.hp.hpl.jena.graph.Triple
+           com.hp.hpl.jena.rdf.model.ModelFactory
+           com.hp.hpl.jena.reasoner.rulesys.RDFSRuleReasonerFactory
+           com.hp.hpl.jena.shared.Lock
+           com.hp.hpl.jena.sparql.core.Var
+           com.hp.hpl.jena.sparql.expr.E_Datatype
+           com.hp.hpl.jena.sparql.expr.E_Add
+           com.hp.hpl.jena.sparql.expr.E_Bound
+           com.hp.hpl.jena.sparql.expr.E_Divide
+           com.hp.hpl.jena.sparql.expr.E_Equals
+           com.hp.hpl.jena.sparql.expr.E_GreaterThan
+           com.hp.hpl.jena.sparql.expr.E_GreaterThanOrEqual
+           com.hp.hpl.jena.sparql.expr.E_IsBlank
+           com.hp.hpl.jena.sparql.expr.E_IsIRI
+           com.hp.hpl.jena.sparql.expr.E_IsLiteral
+           com.hp.hpl.jena.sparql.expr.E_IsURI
+           com.hp.hpl.jena.sparql.expr.E_Lang
+           com.hp.hpl.jena.sparql.expr.E_LessThan
+           com.hp.hpl.jena.sparql.expr.E_LessThanOrEqual
+           com.hp.hpl.jena.sparql.expr.E_Multiply
+           com.hp.hpl.jena.sparql.expr.E_NotEquals
+           com.hp.hpl.jena.sparql.expr.E_Str
+           com.hp.hpl.jena.sparql.expr.E_Subtract
+           com.hp.hpl.jena.sparql.syntax.Element
+           com.hp.hpl.jena.sparql.syntax.ElementFilter
+           com.hp.hpl.jena.sparql.syntax.ElementGroup
+           com.hp.hpl.jena.sparql.syntax.ElementOptional
+           com.hp.hpl.jena.query.DatasetFactory
+           com.hp.hpl.jena.query.QueryExecutionFactory
+           com.hp.hpl.jena.query.QueryFactory
+           com.hp.hpl.jena.vocabulary.ReasonerVocabulary))
 
 ;; Loading RDFa java
 

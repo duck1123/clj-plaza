@@ -1,7 +1,10 @@
 (ns plaza.rdf.implementations.sesame-test
   (:use [plaza.rdf core sparql]
         [plaza.rdf.implementations sesame]
-        [clojure.test]))
+        [clojure.test])
+  (:import plaza.rdf.implementations.sesame.SesameProperty
+           plaza.rdf.implementations.sesame.SesameModel
+           plaza.rdf.implementations.sesame.SesameResource))
 
 ;; we'll test with jena
 (init-sesame-framework)

@@ -3,8 +3,10 @@
 ;; @date 04.05.2010
 
 (ns plaza.rdf.sparql
-  (:use (plaza.rdf core)
-        (plaza utils)))
+  (:use [plaza.rdf.core :only [triple-predicate rdf-triple query-triples triple-subject
+                               triple-object defmodel model-add-triples]]
+        plaza.utils)
+  (:require [clojure.tools.logging :as log]))
 
 ;; main SPARQL framework
 ;; This value must be set when starting the application

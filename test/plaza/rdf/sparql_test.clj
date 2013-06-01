@@ -1,8 +1,15 @@
 (ns plaza.rdf.sparql-test
-  (:use [plaza.utils]
-        [plaza.rdf predicates core sparql]
-        [plaza.rdf.implementations jena]
-        [clojure.test]))
+  (:use clojure.test
+        [plaza.rdf.core :only [d rdf:type optional opt l make-triples
+                               defmodel model-add-triples to-string
+                               triple-predicate triple-subject triples-abstraction]]
+        plaza.rdf.implementations.jena
+        plaza.rdf.predicates
+        plaza.rdf.sparql
+        plaza.utils
+        midje.sweet)
+  (:require [clojure.tools.logging :as log])
+  (:import plaza.rdf.implementations.jena.JenaSparqlFramework))
 
 ;; we'll test with jena
 (init-jena-framework)
