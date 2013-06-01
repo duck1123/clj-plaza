@@ -330,19 +330,24 @@
                            (build-filter-arg builder (first (:args filter))))))
 
 (defn- build-query-atom
-  "Transforms a query atom (subject, predicate or object) in the suitable Jena object for a Jena query"
+  "Transforms a query atom (subject, predicate or object) in the suitable object for a Jena query"
   [atom]
   (if (keyword? atom)
     (Var/alloc (keyword->variable atom))
     (if (literal? atom)
-      (if (= (find-jena-datatype (literal-datatype-uri atom)) (find-jena-datatype :xmlliteral))
-        (Node/createLiteral (literal-lexical-form atom) (literal-language atom) false)
-        (Node/createLiteral (literal-lexical-form atom) (literal-language atom) (find-jena-datatype (literal-datatype-uri atom))))
+      (let [content (literal-lexical-form atom)
+            language (literal-language atom)
+            datatype (find-jena-datatype (literal-datatype-uri atom))]
+        (Node/createLiteral
+         content language
+         (if (= datatype (find-jena-datatype :xmlliteral))
+           false datatype)))
       (if (bnode? atom)
         (Node/createAnon (AnonId. (resource-id atom)))
-        (Node/createURI (if (resource? atom)
-                          (to-string atom)
-                          (str atom)))))))
+        (let [uri (if (resource? atom)
+                    (to-string atom)
+                    (str atom))]
+          (Node/createURI uri))))))
 
 (defn build-query-fn*
   [acum item]
