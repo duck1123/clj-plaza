@@ -15,10 +15,10 @@
         flattened (flatten-1 to-flatten)]
     (is (= (meta to-flatten) (meta flattened)))))
 
-(deftest test-cmd-param-to-keywords
-  (is (= "hola" (cmd-param-to-keyword "hola")))
-  (is (= :hola (cmd-param-to-keyword :hola)))
-  (is (= :hola (cmd-param-to-keyword "-hola"))))
+(deftest test-cmd-param->keywords
+  (is (= "hola" (cmd-param->keyword "hola")))
+  (is (= :hola (cmd-param->keyword :hola)))
+  (is (= :hola (cmd-param->keyword "-hola"))))
 
 (deftest test-check-default-values
   (let [optsp (check-default-values {:password "foo"} {:password "bar" :username "guest"})]

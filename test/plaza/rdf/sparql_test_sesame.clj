@@ -23,39 +23,39 @@
 </rdf:RDF>")
 
 
-(deftest test-framework-sparql-to-pattern-1
+(deftest test-framework-sparql->pattern-1
   (let [framework (plaza.rdf.implementations.sesame.SesameSparqlFramework.)
-        res (parse-sparql-to-pattern framework "SELECT ?v WHERE { ?v ?p 2 . optional {?v ?q 3 . ?v ?q 4 } }")]
+        res (parse-sparql->pattern framework "SELECT ?v WHERE { ?v ?p 2 . optional {?v ?q 3 . ?v ?q 4 } }")]
     (is (= (count res) 3))
     (is (= (count (filter #(:optional (meta %1)) res)) 2))))
 
-(deftest test-framework-sparql-to-pattern-2
+(deftest test-framework-sparql->pattern-2
   (let [framework (plaza.rdf.implementations.sesame.SesameSparqlFramework.)
-        res (parse-sparql-to-pattern framework "SELECT ?v WHERE { ?v ?p 2 . ?v ?q 3 . ?v ?q 4 }")]
+        res (parse-sparql->pattern framework "SELECT ?v WHERE { ?v ?p 2 . ?v ?q 3 . ?v ?q 4 }")]
     (is (= (count res) 3))
     (is (= (count (filter #(:optional (meta %1)) res)) 0))))
 
 
-(deftest test-sparql-to-pattern-1
-  (let [res (sparql-to-pattern "SELECT ?v WHERE { ?v ?p 2 . optional {?v ?q 3 . ?v ?q 4 } }")]
+(deftest test-sparql->pattern-1
+  (let [res (sparql->pattern "SELECT ?v WHERE { ?v ?p 2 . optional {?v ?q 3 . ?v ?q 4 } }")]
     (is (= (count res) 3))
     (is (= (count (filter #(:optional (meta %1)) res)) 2))))
 
-(deftest test-sparql-to-pattern-2
-  (let [res (sparql-to-pattern "SELECT ?v WHERE { ?v ?p 2 . ?v ?q 3 . ?v ?q 4 }")]
+(deftest test-sparql->pattern-2
+  (let [res (sparql->pattern "SELECT ?v WHERE { ?v ?p 2 . ?v ?q 3 . ?v ?q 4 }")]
     (is (= (count res) 3))
     (is (= (count (filter #(:optional (meta %1)) res)) 0))))
 
 (deftest test-build-query-framework-1
   (let [framework (plaza.rdf.implementations.sesame.SesameSparqlFramework.)
-        query (parse-sparql-to-query framework "PREFIX rdf: <http://test.com> SELECT ?v WHERE { ?v ?p 2 .?v rdf:algo 3 . ?v ?q 4  }")
+        query (parse-sparql->query framework "PREFIX rdf: <http://test.com> SELECT ?v WHERE { ?v ?p 2 .?v rdf:algo 3 . ?v ?q 4  }")
         built-query (build-query framework query)]
     (is (= (.isEmpty (first (.getElements (.getQueryPattern built-query))))) false)
     (is (= (.getResultVars built-query) ["v"]))
     (is (= (.getQueryType built-query) com.hp.hpl.jena.query.Query/QueryTypeSelect))))
 
 ;; (deftest test-build-query-1
-;;   (let [query (sparql-to-query "PREFIX rdf: <http://test.com> SELECT ?v WHERE { ?v ?p 2 .?v rdf:algo 3 . ?v ?q 4  }")
+;;   (let [query (sparql->query "PREFIX rdf: <http://test.com> SELECT ?v WHERE { ?v ?p 2 .?v rdf:algo 3 . ?v ?q 4  }")
 ;;         built-query (build-query query)]
 ;;     (is (= (.isEmpty (first (.getElements (.getQueryPattern built-query))))) false)
 ;;     (is (= (.getResultVars built-query) ["v"]))
@@ -63,7 +63,7 @@
 
 (deftest test-build-query-2
   (let [framework (plaza.rdf.implementations.sesame.SesameSparqlFramework.)
-        query (parse-sparql-to-query framework "PREFIX  dc:   <http://purl.org/dc/elements/1.1/>\nPREFIX  a:    <http://www.w3.org/2000/10/annotation-ns#>\nPREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>\n\nSELECT  ?annot\nWHERE\n  { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> ;\n            dc:date      ?date .\n    FILTER ( ?date < \"2005-01-01T00:00:00Z\"^^xsd:dateTime )\n  }\n")]
+        query (parse-sparql->query framework "PREFIX  dc:   <http://purl.org/dc/elements/1.1/>\nPREFIX  a:    <http://www.w3.org/2000/10/annotation-ns#>\nPREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>\n\nSELECT  ?annot\nWHERE\n  { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> ;\n            dc:date      ?date .\n    FILTER ( ?date < \"2005-01-01T00:00:00Z\"^^xsd:dateTime )\n  }\n")]
     (is (= (count (:filters query)) 1))
     (is (= (count (:pattern query)) 2))))
 
@@ -104,7 +104,7 @@
                 (query-set-type :select)
                 (query-set-pattern pattern))
         query-str (.toString (build-query framework query))
-        parsed-pattern (parse-sparql-to-pattern framework query-str)]
+        parsed-pattern (parse-sparql->pattern framework query-str)]
     (is (= 1 (count (filter #(:optional (meta %1)) parsed-pattern))))))
 
 (deftest test-make-pattern-build-2
@@ -117,7 +117,7 @@
                 (query-set-type :select)
                 (query-set-pattern pattern))
         query-str (.toString (build-query *sparql-framework* query))
-        parsed-pattern (parse-sparql-to-pattern framework query-str)]
+        parsed-pattern (parse-sparql->pattern framework query-str)]
     (is (= 2 (count (filter #(:optional (meta %1)) parsed-pattern))))))
 
 ;; (deftest test-abstraction-1
@@ -134,7 +134,7 @@
 
 (deftest test-build-filters-3
   (let [*tq* "PREFIX  dc:   <http://purl.org/dc/elements/1.1/>\nPREFIX  a:    <http://www.w3.org/2000/10/annotation-ns#>\nPREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>\n\nSELECT  ?annot\nWHERE\n  { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> ;\n            dc:date      ?date .\n    FILTER ( bound(?date) < \"2005-01-01T00:00:00Z\"^^xsd:dateTime )\n  }\n"
-        res (.toString (build-filter *sparql-framework* (first (:filters (parse-sparql-to-query *sparql-framework* *tq*)))))]
+        res (.toString (build-filter *sparql-framework* (first (:filters (parse-sparql->query *sparql-framework* *tq*)))))]
     (is (= res "( bound(?date) < \"2005-01-01T00:00:00Z\"^^xsd:dateTime )"))))
 
 (deftest test-go-back-query

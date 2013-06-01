@@ -44,7 +44,7 @@
   (property-range-description [this alias] "Returns a map with the description of the range for the property identified by the provided alias")
   (property-alias [this uri] "Returns the alias for a property URI")
   (parse-prop-value [this alias val] "Parses the provided string value into the right java value for the property defined by alias")
-  (prop-value-to-triple-value [this alias val] "Transforms the provided value into the a valid Plaza triple literal, datatype literal or resource")
+  (prop-value->triple-value [this alias val] "Transforms the provided value into the a valid Plaza triple literal, datatype literal or resource")
   (to-rdf-triples [this] "Transforms this schema into a set of triples")
   (aliases [this] "Returns all tha aliases for the properties of the model"))
 
@@ -58,7 +58,7 @@
                                (throw (Exception. (str "Unknown property: " it " for type "
                                                        type-uri " " properties))))
                              (conj ac [subj (it properties)
-                                       (keyword (str "?" (keyword-to-string it)))]))
+                                       (keyword (str "?" (keyword->string it)))]))
                            [(opt [subj rdf:type (resource-id type-uri)])]
                            props-to-add)
         optional-pattern (reduce (fn [ac it]
@@ -66,7 +66,7 @@
                                      (throw (Exception. (str "Unknown property: " it " for type "
                                                              type-uri " " properties))))
                                    (conj ac (opt [subj (it properties)
-                                                  (keyword (str "?" (keyword-to-string it)))])))
+                                                  (keyword (str "?" (keyword->string it)))])))
                                  []
                                  opt-props-to-add)]
     (make-pattern (concat mandatory-pattern optional-pattern))))
@@ -143,7 +143,7 @@
       (if (= kind :resource) (rdf-resource val)
           (.parse (find-jena-datatype (str range)) val))))
 
-  (prop-value-to-triple-value [this alias val]
+  (prop-value->triple-value [this alias val]
     (let [{kind :kind range :range} (get ranges alias)]
       (if (= kind :resource) (rdf-resource val)
           (let [jena-type (find-jena-datatype (str range))]

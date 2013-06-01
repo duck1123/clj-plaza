@@ -27,32 +27,32 @@
   </rdf:Description>
 </rdf:RDF>")
 
-(fact "framework-sparql-to-pattern-1"
+(fact "framework-sparql->pattern-1"
   (let [framework (JenaSparqlFramework.)
         query "SELECT ?v WHERE { ?v ?p 2 . optional {?v ?q 3 . ?v ?q 4 } }"
-        res (parse-sparql-to-pattern framework query)]
+        res (parse-sparql->pattern framework query)]
     (count res) => 3
     (count (filter #(:optional (meta %1)) res)) => 2))
 
-(fact "framework-sparql-to-pattern-2"
+(fact "framework-sparql->pattern-2"
   (let [framework (JenaSparqlFramework.)
-        res (parse-sparql-to-pattern framework "SELECT ?v WHERE { ?v ?p 2 . ?v ?q 3 . ?v ?q 4 }")]
+        res (parse-sparql->pattern framework "SELECT ?v WHERE { ?v ?p 2 . ?v ?q 3 . ?v ?q 4 }")]
     (count res) => 3
     (count (filter #(:optional (meta %1)) res)) => 0))
 
-(fact "sparql-to-pattern-1"
-  (let [res (sparql-to-pattern "SELECT ?v WHERE { ?v ?p 2 . optional {?v ?q 3 . ?v ?q 4 } }")]
+(fact "sparql->pattern-1"
+  (let [res (sparql->pattern "SELECT ?v WHERE { ?v ?p 2 . optional {?v ?q 3 . ?v ?q 4 } }")]
     (count res) => 3
     (count (filter #(:optional (meta %1)) res)) => 2))
 
-(fact "sparql-to-pattern-2"
-  (let [res (sparql-to-pattern "SELECT ?v WHERE { ?v ?p 2 . ?v ?q 3 . ?v ?q 4 }")]
+(fact "sparql->pattern-2"
+  (let [res (sparql->pattern "SELECT ?v WHERE { ?v ?p 2 . ?v ?q 3 . ?v ?q 4 }")]
     (count res) => 3
     (count (filter #(:optional (meta %1)) res)) => 0))
 
 (fact "build-query-framework-1"
   (let [framework (plaza.rdf.implementations.jena.JenaSparqlFramework.)
-        query (parse-sparql-to-query framework "PREFIX rdf: <http://test.com>
+        query (parse-sparql->query framework "PREFIX rdf: <http://test.com>
 SELECT ?v
 WHERE {
   ?v ?p 2 .
@@ -68,7 +68,7 @@ WHERE {
   (let [framework (plaza.rdf.implementations.jena.JenaSparqlFramework.)
         pattern (str "PREFIX rdf: <http://test.com> "
                      "SELECT ?v WHERE { ?v ?p 2 .?v rdf:algo 3 . ?v ?q 4  }")
-        query (sparql-to-query pattern)
+        query (sparql->query pattern)
         built-query (build-query framework query)]
     (.isEmpty (first (.getElements (.getQueryPattern built-query)))) => false
     (.getResultVars built-query) => ["v"]
@@ -76,7 +76,7 @@ WHERE {
 
 (fact "build-query-2"
   (let [framework (plaza.rdf.implementations.jena.JenaSparqlFramework.)
-        query (parse-sparql-to-query
+        query (parse-sparql->query
                framework
                "PREFIX  dc:   <http://purl.org/dc/elements/1.1/>
 PREFIX  a:    <http://www.w3.org/2000/10/annotation-ns#>
@@ -128,7 +128,7 @@ WHERE {
                 (query-set-type :select)
                 (query-set-pattern pattern))
         query-str (.toString (build-query framework query))
-        parsed-pattern (parse-sparql-to-pattern framework query-str)]
+        parsed-pattern (parse-sparql->pattern framework query-str)]
     (count (filter #(:optional (meta %1)) parsed-pattern)) => 1))
 
 (fact "#'pattern-bind"
@@ -148,7 +148,7 @@ WHERE {
                 (query-set-type :select)
                 (query-set-pattern pattern))
         query-str (.toString (build-query *sparql-framework* query))
-        parsed-pattern (parse-sparql-to-pattern framework query-str)]
+        parsed-pattern (parse-sparql->pattern framework query-str)]
     (count (filter #(:optional (meta %1)) parsed-pattern)) => 2))
 
 (fact "abstraction-1"
@@ -177,7 +177,7 @@ WHERE {
   dc:date      ?date .
   FILTER (bound(?date) < \"2005-01-01T00:00:00Z\"^^xsd:dateTime)
 }"
-        res (->> (parse-sparql-to-query *sparql-framework* *tq*)
+        res (->> (parse-sparql->query *sparql-framework* *tq*)
                  :filters
                  first
                  (build-filter *sparql-framework*)

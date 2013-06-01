@@ -184,9 +184,9 @@
   "Provided a pair [ns local] tries to expand the ns with the information in the rdf-ns registry"
   [ns local]
   (let [registry-ns (find-ns-registry ns)
-        expanded-ns (keyword-to-string (if (nil? registry-ns) ns registry-ns))]
+        expanded-ns (keyword->string (if (nil? registry-ns) ns registry-ns))]
     (if (.startsWith expanded-ns "http")
-      (str expanded-ns (keyword-to-string local))
+      (str expanded-ns (keyword->string local))
       (throw (Exception. (str "Unknown RDF namespace " expanded-ns " with local part " local))))))
 
 ;;; Manipulation of models
@@ -218,7 +218,7 @@
   ([]
      (create-blank-node *rdf-model*))
   ([id]
-     (let [anon-id (keyword-to-string id)]
+     (let [anon-id (keyword->string id)]
        (create-blank-node *rdf-model* anon-id))))
 
 (defn b
@@ -283,7 +283,7 @@
         (rdf-resource rdf-ns local))
       (if (is-blank-node subject)
         subject
-        (if (.startsWith (keyword-to-string subject) "?")
+        (if (.startsWith (keyword->string subject) "?")
           (keyword subject)
           (rdf-resource subject))))))
 
@@ -300,7 +300,7 @@
           (rdf-property rdf-ns local))
         (if (is-blank-node predicate)
           (throw (Exception. "Blank node cannot be predicate in a model"))
-          (if (.startsWith (keyword-to-string predicate) "?")
+          (if (.startsWith (keyword->string predicate) "?")
             (keyword predicate)
             (rdf-property predicate)))))))
 
@@ -421,20 +421,20 @@
   (instance? plaza.rdf.core.RDFModel obj))
 
 ;;;@todo
-(defn model-to-triples
+(defn model->triples
   "Extracts the triples stored into a model"
   [model]
   (with-meta (walk-triples model (fn [s p o] [s p o])) {:triples true}))
 
 ;; Models IO
 
-(defn document-to-model
+(defn document->model
   "Adds a set of triples read from a serialized document into a model"
   [stream format]
   (load-stream *rdf-model* stream format))
 
 
-(defn model-to-format
+(defn model->format
   "Writes a model using the chosen format"
   ([]
      (output-string *rdf-model* :ntriple))
@@ -446,14 +446,14 @@
      (output-string model writer format)))
 
 
-(defn triples-to-format
+(defn triples->format
   "Writes a set of triple using the "
   [triples & args]
   (with-model (build-model)
     (model-add-triples triples)
-    (apply model-to-format args)))
+    (apply model->format args)))
 
-(defn triples-to-string
+(defn triples->string
   "Shows a set of triples using string representations for the triples components"
   [triples]
   (map (fn [[s p o]] [(to-string s) (to-string p) (to-string o)]) triples))
@@ -492,7 +492,7 @@
 (defn find-resources
   "Retrieves the resources (collections triples with the same subject) inside a model or triple set"
   [model-or-triples]
-  (let [triples (model-to-triples model-or-triples)]
+  (let [triples (model->triples model-or-triples)]
     (loop [acum {}
            max (count triples)
            idx 0]
@@ -508,7 +508,7 @@
 (defn find-resource-uris
   "Retrieves the resource uris (collections triples with the same subject) inside a model or triple set"
   [model-or-triples]
-  (let [triples (model-to-triples model-or-triples)]
+  (let [triples (model->triples model-or-triples)]
     (loop [acum []
            max (count triples)
            idx 0]

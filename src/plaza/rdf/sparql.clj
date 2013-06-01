@@ -27,12 +27,12 @@
 (defprotocol SparqlFramework
   "An RDF list of triples where some values has been replaced by variables. It is also possible to
    define an optional part in the pattern"
-  (parse-sparql-to-query [framework sparql] "Parses a SPARQL query and builds a query")
-  (parse-sparql-to-pattern [framework sparql] "Parses a SPARQL query and builds a pattern")
+  (parse-sparql->query [framework sparql] "Parses a SPARQL query and builds a query")
+  (parse-sparql->pattern [framework sparql] "Parses a SPARQL query and builds a pattern")
   (build-filter [framework filter] "Transforms a filter representation into a filter Java object")
   (build-query [framework query] "Transforms a query reprsentation into a query Java object")
   (is-var-expr [framework expr] "Checks wether an object is a valid var expression for this framework")
-  (var-to-keyword [framework var-expr] "Transforms an object var into a keyword"))
+  (var->keyword [framework var-expr] "Transforms an object var into a keyword"))
 
 ;; common variable names
 
@@ -63,22 +63,22 @@
 (def ?y :?y)
 (def ?z :?z)
 
-(defn keyword-to-variable
+(defn keyword->variable
   "Transforms a symbol ':?t' into a variable name 't'"
   [kw]
-  (if (.startsWith (keyword-to-string kw) "?")
-    (aget (.split (keyword-to-string kw) "\\?") 1)
-    (keyword-to-string kw)))
+  (if (.startsWith (keyword->string kw) "?")
+    (aget (.split (keyword->string kw) "\\?") 1)
+    (keyword->string kw)))
 
-(defn sparql-to-pattern
+(defn sparql->pattern
   "Wraps the SPARQL framework type function that transforms a SPARQL string into a pattern"
   [sparql]
-  (parse-sparql-to-pattern *sparql-framework* sparql))
+  (parse-sparql->pattern *sparql-framework* sparql))
 
-(defn sparql-to-query
+(defn sparql->query
   "Wraps the SPARQL framework type function that transforms a SPARQL string into a query"
   [sparql]
-  (parse-sparql-to-query *sparql-framework* sparql))
+  (parse-sparql->query *sparql-framework* sparql))
 
 (defn make-pattern
   "Builds a new pattern representation"
@@ -235,17 +235,17 @@
 
 ;; Parsing a SPARQL string query into a query pattern representation
 
-(defn- var-to-keyword-fn
+(defn- var->keyword-fn
   [v]
   (if (keyword? v)
     v
-    (var-to-keyword *sparql-framework* v)))
+    (var->keyword *sparql-framework* v)))
 
 (defn- collect-var
   "Auxiliary function for pattern-collect-vars"
   [rs atom]
   (if (is-var-expr *sparql-framework* atom)
-    (let [katom (var-to-keyword-fn atom)]
+    (let [katom (var->keyword-fn atom)]
       (if (some #(= katom %1) rs)
         rs
         (conj rs katom)))
@@ -370,7 +370,7 @@ with results binding variables in que query pattern"
     (distinct (model-query-triples (defmodel (model-add-triples triples))
                                    query))))
 
-(defn query-to-string
+(defn query->string
   "Returns the string representation of a query"
   [query]
   (str (build-query *sparql-framework* query)))

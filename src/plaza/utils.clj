@@ -4,7 +4,7 @@
 
 (ns plaza.utils)
 
-(defn keyword-to-string
+(defn keyword->string
   "transforms a keyword into a string"
   [k]
   (if (nil? k) ""
@@ -102,7 +102,7 @@
   (.getId (Thread/currentThread)))
 
 
-(defn cmd-param-to-keyword
+(defn cmd-param->keyword
   "Transforms a command line argument (-something) into a keyword (:something)"
   [atom]
   (if (keyword? atom)

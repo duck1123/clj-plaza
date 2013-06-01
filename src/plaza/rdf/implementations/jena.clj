@@ -14,7 +14,7 @@
                                resource-id to-java to-string walk-triples]]
         [plaza.rdf.sparql :only [*sparql-framework* alter-root-sparql-framework
                                  build-query pattern-bind pattern-reject-unbound
-                                 sparql-to-query SparqlFramework]]
+                                 sparql->query SparqlFramework]]
         plaza.rdf.implementations.common
         plaza.utils)
   (:require [clojure.tools.logging :as log])
@@ -88,7 +88,7 @@
 (defn- model-query-fn
   "Queries a model and returns a map of bindings"
   [model query query-string]
-  ;; (let [query (if (string? query-or-string) (sparql-to-query query-or-string) query-or-string)
+  ;; (let [query (if (string? query-or-string) (sparql->query query-or-string) query-or-string)
   ;;   query-string (if (string? query-or-string) query-or-string (str (build-query *sparql-framework* query)))]
   ;;   (println (str "QUERYING JENA WITH:\r\n" query-string))
   (model-critical-read
@@ -103,7 +103,7 @@
   "Queries a model and returns a list of triple sets
  with results binding variables in que query pattern"
   [model query-or-string]
-  (let [query (if (string? query-or-string) (sparql-to-query query-or-string) query-or-string)
+  (let [query (if (string? query-or-string) (sparql->query query-or-string) query-or-string)
         query-string (if (string? query-or-string)
                        query-or-string
                        (str (build-query *sparql-framework* query-or-string)))
@@ -330,12 +330,12 @@
   (create-resource [model uri]
     (if (instance? plaza.rdf.core.RDFResource uri)
       uri
-      (if (or (.startsWith (keyword-to-string uri) "http://")
-              (.startsWith (keyword-to-string uri) "https://"))
+      (if (or (.startsWith (keyword->string uri) "http://")
+              (.startsWith (keyword->string uri) "https://"))
         (JenaResource.
-         (.createResource mod (keyword-to-string uri)))
+         (.createResource mod (keyword->string uri)))
         (JenaResource.
-         (.createResource mod (str *rdf-ns* (keyword-to-string uri)))))))
+         (.createResource mod (str *rdf-ns* (keyword->string uri)))))))
   (create-property [model ns local]
     (.createProperty mod (expand-ns ns local)))
   (create-property [model uri]
@@ -344,17 +344,17 @@
         uri
         (JenaProperty.
          (.createProperty mod (str uri))))
-      (if (or (.startsWith (keyword-to-string uri) "http://")
-              (.startsWith (keyword-to-string uri) "https://"))
+      (if (or (.startsWith (keyword->string uri) "http://")
+              (.startsWith (keyword->string uri) "https://"))
         (JenaProperty.
-         (.createProperty mod (keyword-to-string uri)))
+         (.createProperty mod (keyword->string uri)))
         (JenaProperty.
-         (.createProperty mod *rdf-ns* (keyword-to-string uri))))))
+         (.createProperty mod *rdf-ns* (keyword->string uri))))))
   (create-blank-node [model]
     (JenaBlank.
      (.createResource mod (AnonId.))))
   (create-blank-node [model id]
-    (let [anon-id (keyword-to-string id)]
+    (let [anon-id (keyword->string id)]
       (JenaBlank.
        (.createResource mod (AnonId. anon-id)))))
   (create-literal [model lit]
@@ -473,17 +473,17 @@
 
 (deftype JenaSparqlFramework []
   SparqlFramework
-  (parse-sparql-to-query [framework sparql]
-    (parse-sparql-to-query-fn sparql))
-  (parse-sparql-to-pattern [framework sparql]
-    (parse-sparql-to-pattern-fn sparql))
+  (parse-sparql->query [framework sparql]
+    (parse-sparql->query-fn sparql))
+  (parse-sparql->pattern [framework sparql]
+    (parse-sparql->pattern-fn sparql))
   (build-filter [framework filter]
     (build-filter-fn framework filter))
   (build-query [framework query]
     (build-query-fn framework query))
   (is-var-expr [framework expr]
     (is-var-expr-fn expr))
-  (var-to-keyword [framework var-expr]
+  (var->keyword [framework var-expr]
     (let [s (.getVarName var-expr)]
       (if (.startsWith s "?")
         (keyword s)

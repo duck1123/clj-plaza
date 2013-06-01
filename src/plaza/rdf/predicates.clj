@@ -8,7 +8,7 @@
                                literal-language literal-lexical-form literal-value
                                qname-local qname-prefix resource-id]]
         [plaza.rdf.sparql :only [*sparql-framework* is-var-expr]]
-        [plaza.utils :only [keyword-to-string]])
+        [plaza.utils :only [keyword->string]])
   (:require [plaza.rdf.core :as rdf]))
 
 ;; model value extraction
@@ -70,7 +70,7 @@
           true
           (= (qname-prefix atom)
              (if (nil? (find-ns-registry prefix))
-               (keyword-to-string prefix)
+               (keyword->string prefix)
                (find-ns-registry prefix))))))
 
 (defn qname-local?
@@ -81,7 +81,7 @@
               (is-literal atom))
           false
           true
-          (= (qname-local atom) (keyword-to-string local)))))
+          (= (qname-local atom) (keyword->string local)))))
 
 (defn literal-value?
   "Matches a literal with a certain literal value"
@@ -155,7 +155,7 @@
       false
       (if  (and (instance? plaza.rdf.core.RDFResource atom)
                 (is-blank atom))
-        (= (keyword-to-string id) (str (resource-id atom)))
+        (= (keyword->string id) (str (resource-id atom)))
         false))))
 
 (defn is-resource?

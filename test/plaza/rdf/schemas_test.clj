@@ -40,18 +40,18 @@
         (is (nil? (property-alias modelpp :wadus)))
         (is (nil? (property-alias modelpp :foo))))))
 
-(deftest test-to-map
+(deftest test->map
   (let [m (to-map *test-model* [[:test ["http://test.com/" :name] "name"]
                                 [:test ["http://test.com/" :price] (d 120)]
                                 [:test :number (d 10)]])]
     (is (= m {:name (rdf-resource "name") :price (d 120) :number (d 10)}))))
 
-(deftest test-to-pattern
+(deftest test->pattern
   (let [p (to-pattern *test-model* [:name :price])]
     (is (= 4 (count p)))
     (is (= 2 (count (filter #(:optional (meta %1)) p))))))
 
-(deftest test-to-pattern-2
+(deftest test->pattern-2
   (let [p (to-pattern *test-model* "http://test.com/Test" [:name :price])]
     (is (= 4 (count p)))
     (is (= 2 (count (filter #(:optional (meta %1)) p))))
@@ -66,7 +66,7 @@
 (deftest test-property-parse-value
   (is (= 2 (parse-prop-value *test-model* :number "2"))))
 
-(deftest test-schema-to-triples
+(deftest test-schema->triples
   (let [ts (to-rdf-triples foaf:Agent-schema)]
     (is (= 37 (count ts)))))
 

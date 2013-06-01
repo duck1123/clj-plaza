@@ -25,24 +25,24 @@
 (defn find-sesame-datatype
   "Finds the right datatype object from the string representation"
   [literal]
-  (let [lit (let [literal-str (keyword-to-string literal)]
+  (let [lit (let [literal-str (keyword->string literal)]
               (if (.startsWith literal-str "http://")
                 (aget (.split literal-str "#") 1)
                 literal))]
     (cond
-     (= "xmlliteral" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"
-     (= "anyuri" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#anyURI"
-     (= "boolean" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#boolean"
-     (= "byte" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#byte"
-     (= "date" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#date"
-     (= "datetime" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#dateTime"
-     (= "decimal" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#decimal"
-     (= "double" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#double"
-     (= "float" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#float"
-     (= "int" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#int"
-     (= "integer" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#integer"
-     (= "long" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#long"
-     (= "string" (.toLowerCase (keyword-to-string lit))) "http://www.w3.org/2001/XMLSchema#string"
+     (= "xmlliteral" (.toLowerCase (keyword->string lit))) "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"
+     (= "anyuri" (.toLowerCase (keyword->string lit))) "http://www.w3.org/2001/XMLSchema#anyURI"
+     (= "boolean" (.toLowerCase (keyword->string lit))) "http://www.w3.org/2001/XMLSchema#boolean"
+     (= "byte" (.toLowerCase (keyword->string lit))) "http://www.w3.org/2001/XMLSchema#byte"
+     (= "date" (.toLowerCase (keyword->string lit))) "http://www.w3.org/2001/XMLSchema#date"
+     (= "datetime" (.toLowerCase (keyword->string lit))) "http://www.w3.org/2001/XMLSchema#dateTime"
+     (= "decimal" (.toLowerCase (keyword->string lit))) "http://www.w3.org/2001/XMLSchema#decimal"
+     (= "double" (.toLowerCase (keyword->string lit))) "http://www.w3.org/2001/XMLSchema#double"
+     (= "float" (.toLowerCase (keyword->string lit))) "http://www.w3.org/2001/XMLSchema#float"
+     (= "int" (.toLowerCase (keyword->string lit))) "http://www.w3.org/2001/XMLSchema#int"
+     (= "integer" (.toLowerCase (keyword->string lit))) "http://www.w3.org/2001/XMLSchema#integer"
+     (= "long" (.toLowerCase (keyword->string lit))) "http://www.w3.org/2001/XMLSchema#long"
+     (= "string" (.toLowerCase (keyword->string lit))) "http://www.w3.org/2001/XMLSchema#string"
      :else literal)))
 
 (defn sesame-typed-literal-tojava
@@ -108,7 +108,7 @@
 (defn- model-query-triples-fn
   "Queries a model and returns a list of triple sets with results binding variables in que query pattern"
   [model connection query-or-string]
-  (let [query (if (string? query-or-string) (sparql-to-query query-or-string) query-or-string)
+  (let [query (if (string? query-or-string) (sparql->query query-or-string) query-or-string)
         query-string (if (string? query-or-string)
                        query-or-string
                        (str (build-query *sparql-framework* query-or-string)))
@@ -323,13 +323,13 @@
   (create-resource [model uri]
     (if (instance? plaza.rdf.core.RDFResource uri)
       uri
-      (if (or (.startsWith (keyword-to-string uri) "http://")
-              (.startsWith (keyword-to-string uri) "https://"))
+      (if (or (.startsWith (keyword->string uri) "http://")
+              (.startsWith (keyword->string uri) "https://"))
         (plaza.rdf.implementations.sesame.SesameResource.
-         (.createURI (ValueFactoryImpl/getInstance) (keyword-to-string uri)))
+         (.createURI (ValueFactoryImpl/getInstance) (keyword->string uri)))
         (plaza.rdf.implementations.sesame.SesameResource.
          (.createURI (ValueFactoryImpl/getInstance)
-                     (expand-ns *rdf-ns* (keyword-to-string uri)))))))
+                     (expand-ns *rdf-ns* (keyword->string uri)))))))
   (create-property [model ns local]
     (plaza.rdf.implementations.sesame.SesameProperty.
      (.createURI (ValueFactoryImpl/getInstance) (expand-ns ns local))))
@@ -338,25 +338,25 @@
             (instance? plaza.rdf.implementations.sesame.SesameProperty uri))
       (plaza.rdf.implementations.sesame.SesameProperty.
        (.createURI (ValueFactoryImpl/getInstance) (to-string uri)))
-      (if (or (.startsWith (keyword-to-string uri) "http://")
-              (.startsWith (keyword-to-string uri) "https://"))
+      (if (or (.startsWith (keyword->string uri) "http://")
+              (.startsWith (keyword->string uri) "https://"))
         (plaza.rdf.implementations.sesame.SesameProperty.
-         (.createURI (ValueFactoryImpl/getInstance) (keyword-to-string uri)))
+         (.createURI (ValueFactoryImpl/getInstance) (keyword->string uri)))
         (plaza.rdf.implementations.sesame.SesameProperty.
          (.createURI (ValueFactoryImpl/getInstance)
-                     (expand-ns *rdf-ns* (keyword-to-string uri)))))))
+                     (expand-ns *rdf-ns* (keyword->string uri)))))))
   (create-blank-node [model]
     (plaza.rdf.implementations.sesame.SesameBlank.
      (.createBNode (ValueFactoryImpl/getInstance) (str (.getTime (java.util.Date.))))))
   (create-blank-node [model id]
     (plaza.rdf.implementations.sesame.SesameBlank.
-     (.createBNode (ValueFactoryImpl/getInstance) (keyword-to-string id))))
+     (.createBNode (ValueFactoryImpl/getInstance) (keyword->string id))))
   (create-literal [model lit]
     (plaza.rdf.implementations.sesame.SesameLiteral.
      (.createLiteral (ValueFactoryImpl/getInstance) lit)))
   (create-literal [model lit lang]
     (plaza.rdf.implementations.sesame.SesameLiteral.
-     (.createLiteral (ValueFactoryImpl/getInstance) lit (keyword-to-string lang))))
+     (.createLiteral (ValueFactoryImpl/getInstance) lit (keyword->string lang))))
   (create-typed-literal [model lit]
     (plaza.rdf.implementations.sesame.SesameTypedLiteral.
      (.createLiteral (ValueFactoryImpl/getInstance) lit)))
@@ -482,17 +482,17 @@
 
 (deftype SesameSparqlFramework []
   SparqlFramework
-  (parse-sparql-to-query [framework sparql]
-    (parse-sparql-to-query-fn sparql))
-  (parse-sparql-to-pattern [framework sparql]
-    (parse-sparql-to-pattern-fn sparql))
+  (parse-sparql->query [framework sparql]
+    (parse-sparql->query-fn sparql))
+  (parse-sparql->pattern [framework sparql]
+    (parse-sparql->pattern-fn sparql))
   (build-filter [framework filter]
     (build-filter-fn framework filter))
   (build-query [framework query]
     (build-query-fn framework query))
   (is-var-expr [framework expr]
     (is-var-expr-fn expr))
-  (var-to-keyword [framework var-expr]
+  (var->keyword [framework var-expr]
     (let [s (.getVarName var-expr)]
       (if (.startsWith s "?")
         (keyword s)

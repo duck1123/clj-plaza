@@ -63,11 +63,11 @@
 (defn find-jena-datatype
   "Finds the right datatype object from the string representation"
   [literal]
-  (let [lit (let [literal-str (keyword-to-string literal)]
+  (let [lit (let [literal-str (keyword->string literal)]
               (if (.startsWith literal-str "http://")
                 (aget (.split literal-str "#") 1)
                 literal))]
-    (condp = (.toLowerCase (keyword-to-string lit))
+    (condp = (.toLowerCase (keyword->string lit))
       "xmlliteral" XMLLiteralType/theXMLLiteralType
       "literal"    XMLLiteralType/theXMLLiteralType
       "anyuri"     XSDDatatype/XSDanyURI
@@ -88,7 +88,7 @@
 (defn datatype-symbol
   "Transforms a XMLSchema datatype URI into a symbol representing the type"
   [literal]
-  (let [lit (let [literal-str (keyword-to-string literal)]
+  (let [lit (let [literal-str (keyword->string literal)]
               (if (and (.startsWith literal-str "http://") (not= -1 (.indexOf literal-str "#")))
                 (aget (.split literal-str "#") 1)
                 literal))]
@@ -137,7 +137,7 @@
   "Tests if one Jena expression is a var expression"
   [expr]
   (or (and (keyword? expr)
-           (.startsWith (keyword-to-string expr) "?"))
+           (.startsWith (keyword->string expr) "?"))
       (= (class expr) ExprVar)))
 
 (defn- parse-pattern-literal
@@ -228,7 +228,7 @@
 
     (throw (Exception. (str "Trying to parse unknown/not supported filter: " expr)))))
 
-(defn sparql-to-pattern-filters
+(defn sparql->pattern-filters
   "Parses a SPARQL query and transform it into a pattern and some filters"
   [sparql-string-or-query]
   (let [query (if (string? sparql-string-or-query)
@@ -266,16 +266,16 @@
                   acum))))
           query-pattern-els))))
 
-(defn parse-sparql-to-pattern-fn
+(defn parse-sparql->pattern-fn
   "Parses a SPARQL query and transform it into a pattern"
   [sparql-string-or-query]
-  (filter (fn [x] (not (:filter (meta x)))) (sparql-to-pattern-filters sparql-string-or-query)))
+  (filter (fn [x] (not (:filter (meta x)))) (sparql->pattern-filters sparql-string-or-query)))
 
-(defn parse-sparql-to-query-fn
+(defn parse-sparql->query-fn
   "Parses a SPARQL query and builds a whole query dictionary"
   [sparql-string]
   (let [query (QueryFactory/create sparql-string)
-        pattern-filters (sparql-to-pattern-filters query)]
+        pattern-filters (sparql->pattern-filters query)]
     {:vars (mapv keyword (.getResultVars query))
      :filters (filter (comp :filter meta)     pattern-filters)
      :pattern (filter (comp not :filter meta) pattern-filters)
@@ -319,7 +319,7 @@
 (defn- build-filter-arg
   [builder arg]
   (cond
-   (keyword? arg) (ExprVar. (.replace (keyword-to-string arg) "?" ""))
+   (keyword? arg) (ExprVar. (.replace (keyword->string arg) "?" ""))
    (map? arg) (build-filter builder arg)
    (is-resource arg) (NodeValue/makeNode (Node/createURI (resource-id arg)))
    true (NodeValue/makeNode
@@ -340,7 +340,7 @@
   "Transforms a query atom (subject, predicate or object) in the suitable Jena object for a Jena query"
   [atom]
   (if (keyword? atom)
-    (Var/alloc (keyword-to-variable atom))
+    (Var/alloc (keyword->variable atom))
     (if (is-literal atom)
       (if (= (find-jena-datatype (literal-datatype-uri atom)) (find-jena-datatype :xmlliteral))
         (Node/createLiteral (literal-lexical-form atom) (literal-language atom) false)
@@ -393,7 +393,7 @@
       (loop [idx 0]
         (when (< idx (count (:vars query)))
           (do
-            (.addResultVar built-query (keyword-to-variable (nth (:vars query) idx)))
+            (.addResultVar built-query (keyword->variable (nth (:vars query) idx)))
             (recur (inc idx))))))
     (.setQueryPattern built-query built-pattern)
 
@@ -412,5 +412,5 @@
     (when (:reduced query)
       (.setReduced built-query true))
     (when (:order-by query)
-      (.addOrderBy built-query (keyword-to-variable (:order-by query)) 1))
+      (.addOrderBy built-query (keyword->variable (:order-by query)) 1))
     built-query))
