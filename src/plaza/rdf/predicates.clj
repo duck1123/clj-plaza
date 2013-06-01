@@ -77,11 +77,10 @@
   "Matches a URI or curie against a triple atom"
   [local]
   (fn [triple atom]
-    (cond (or (instance? clojure.lang.Keyword atom)
-              (is-literal atom))
-          false
-          true
-          (= (qname-local atom) (keyword->string local)))))
+    (and (not (or (keyword? atom)
+                  (is-literal atom)))
+         (= (qname-local atom)
+            (keyword->string local)))))
 
 (defn literal-value?
   "Matches a literal with a certain literal value"
