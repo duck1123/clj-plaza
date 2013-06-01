@@ -148,14 +148,15 @@
 (defn- parse-pattern-atom
   "Parses a single component of a pattern: variable, literal, URI, etc"
   [atom pos]
-  (cond
-   (instance? Var atom) (keyword (str "?" (.getVarName atom)))
-   (instance? Node_URI atom) (cond
-                              (= pos :subject) (rdf-resource (.getURI atom))
-                              (= pos :predicate) (rdf-property (.getURI atom))
-                              (= pos :object) (rdf-resource (.getURI atom)))
-   (instance? Node_Literal atom) (parse-pattern-literal atom)
-   true atom))
+  (condp instance? atom
+    Var (keyword (str "?" (.getVarName atom)))
+    Node_URI ((condp = pos
+                :subject   rdf-resource
+                :predicate rdf-property
+                :object    rdf-resource)
+              (.getURI atom))
+    Node_Literal (parse-pattern-literal atom)
+    atom))
 
 (defn parse-literal-lexical
   [lit]
