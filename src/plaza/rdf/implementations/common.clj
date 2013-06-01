@@ -388,10 +388,13 @@
             (.addResultVar built-query (keyword-to-variable (nth (:vars query) idx)))
             (recur (+ idx 1)))))
       (.setQueryPattern built-query built-pattern)
-      (.setQueryType built-query (cond (= :ask (:kind query)) Query/QueryTypeAsk
-                                       (= :construct (:kind query)) Query/QueryTypeConstruct
-                                       (= :describe (:kind query)) Query/QueryTypeDescribe
-                                       (= :select (:kind query)) Query/QueryTypeSelect))
+
+      (condp = (:kind query)
+        :ask       (.setQueryAskType built-query)
+        :construct (.setQueryConstructType built-query)
+        :describe  (.setQueryDescribeType built-query)
+        :select    (.setQuerySelectType built-query))
+
       (when (:limit query)
         (.setLimit built-query (:limit query)))
       (when (:offset query)
