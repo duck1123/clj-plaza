@@ -10,8 +10,9 @@
                                critical-read critical-write expand-ns
                                find-datatype literal-datatype-uri
                                literal-language literal-lexical-form
-                               model-critical-read parse-format property? output-string
-                               resource-id to-java to-string walk-triples]]
+                               model-critical-read parse-format property?
+                               output-string resource-id to-java to-string
+                               walk-triples]]
         [plaza.rdf.sparql :only [*sparql-framework* alter-root-sparql-framework
                                  build-query pattern-bind pattern-reject-unbound
                                  sparql->query SparqlFramework]]
