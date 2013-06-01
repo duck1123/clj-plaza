@@ -477,8 +477,8 @@
     (build-filter-fn framework filter))
   (build-query [framework query]
     (build-query-fn framework query))
-  (is-var-expr [framework expr]
-    (is-var-expr-fn expr))
+  (var-expr? [framework expr]
+    (var-expr-fn? expr))
   (var->keyword [framework var-expr]
     (let [s (.getVarName var-expr)]
       (if (.startsWith s "?")
