@@ -416,7 +416,8 @@ with results binding variables in que query pattern"
 
 (defn- subject-vars
   [pattern]
-  (reduce (fn [ac [s p o]] (if (is-var-expr *sparql-framework* s) (conj ac s) ac)) [] pattern))
+  (reduce (fn [ac [s p o]]
+            (if (is-var-expr *sparql-framework* s) (conj ac s) ac)) [] pattern))
 
 (defn- predicate-vars
   [pattern]
