@@ -110,7 +110,7 @@
     (str this-uri  " " properties))
 
   (to-pattern [this subject props]
-    (let [subj (if (instance? plaza.rdf.core.RDFResource subject)
+    (let [subj (if (instance? RDFResource subject)
                  subject
                  (if (coll? subject) (apply rdf-resource subject) (rdf-resource subject)))]
       (build-pattern-for-model this-uri subj props properties)))
@@ -184,7 +184,7 @@
                                                    range)})]
                          [(assoc ac-props it prop-val)
                           (assoc ac-ranges it range-val)])) [{} {}] (keys props-map-pre))]
-    (plaza.rdf.schemas.RDFSModel. typeuri '() (first maps) (second maps))))
+    (RDFSModel. typeuri '() (first maps) (second maps))))
 
 (defn extend-rdfs-schemas
   "Defines a new RDFS Class that inherits all the properties defined in the list of provided schemas"
@@ -208,7 +208,7 @@
                                           (:alias prop))]
                               (assoc acum alias (:range prop))))
                           {} props)]
-    (plaza.rdf.schemas.RDFSModel. typeuri (map type-uri schemas) prop-map range-map)))
+    (RDFSModel. typeuri (map type-uri schemas) prop-map range-map)))
 
 ;; Utils
 
