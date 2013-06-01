@@ -337,11 +337,10 @@
     (if (literal? atom)
       (let [content (literal-lexical-form atom)
             language (literal-language atom)
-            datatype (find-jena-datatype (literal-datatype-uri atom))]
-        (Node/createLiteral
-         content language
-         (if (= datatype (find-jena-datatype :xmlliteral))
-           false datatype)))
+            datatype (find-jena-datatype (literal-datatype-uri atom))
+            datatype-val (if (= datatype (find-jena-datatype :xmlliteral))
+                           false datatype)]
+        (Node/createLiteral content language datatype-val))
       (if (bnode? atom)
         (Node/createAnon (AnonId. (resource-id atom)))
         (let [uri (if (resource? atom)
