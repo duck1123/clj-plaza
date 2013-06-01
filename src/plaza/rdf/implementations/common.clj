@@ -5,23 +5,55 @@
 (ns plaza.rdf.implementations.common
   (:use [plaza.utils]
         [plaza.rdf core sparql])
-  (:import (com.hp.hpl.jena.rdf.model ModelFactory)
-           (com.hp.hpl.jena.reasoner.rulesys RDFSRuleReasonerFactory)
-           (com.hp.hpl.jena.vocabulary ReasonerVocabulary)
-           (com.hp.hpl.jena.datatypes.xsd XSDDatatype)
-           (com.hp.hpl.jena.sparql.core Var)
-           (com.hp.hpl.jena.datatypes.xsd.impl XMLLiteralType)
-           (com.hp.hpl.jena.shared Lock)
-           (com.hp.hpl.jena.query QueryFactory QueryExecutionFactory DatasetFactory)
-           (com.hp.hpl.jena.sparql.syntax Element ElementGroup ElementOptional ElementFilter)
-           (com.hp.hpl.jena.graph Node Triple)
-           (com.hp.hpl.jena.sparql.expr E_Str E_Lang E_Datatype E_Bound E_IsIRI E_IsURI E_IsBlank E_IsLiteral E_GreaterThanOrEqual E_GreaterThan
-                                        E_LessThanOrEqual E_LessThan E_NotEquals E_Equals E_Subtract E_Add E_Multiply E_Divide)))
+  (:import com.hp.hpl.jena.datatypes.BaseDatatype
+           com.hp.hpl.jena.datatypes.xsd.XSDDatatype
+           com.hp.hpl.jena.datatypes.xsd.impl.XMLLiteralType
+           com.hp.hpl.jena.graph.Node
+           com.hp.hpl.jena.graph.Node_Literal
+           com.hp.hpl.jena.graph.Node_URI
+           com.hp.hpl.jena.graph.Triple
+           com.hp.hpl.jena.query.Query
+           com.hp.hpl.jena.query.QueryFactory
+           com.hp.hpl.jena.query.QueryExecutionFactory
+           com.hp.hpl.jena.query.DatasetFactory
+           com.hp.hpl.jena.rdf.model.AnonId
+           com.hp.hpl.jena.rdf.model.ModelFactory
+           com.hp.hpl.jena.reasoner.rulesys.RDFSRuleReasonerFactory
+           com.hp.hpl.jena.shared.Lock
+           com.hp.hpl.jena.sparql.core.Var
+           com.hp.hpl.jena.sparql.expr.E_Add
+           com.hp.hpl.jena.sparql.expr.E_Bound
+           com.hp.hpl.jena.sparql.expr.E_Datatype
+           com.hp.hpl.jena.sparql.expr.E_Divide
+           com.hp.hpl.jena.sparql.expr.E_Equals
+           com.hp.hpl.jena.sparql.expr.E_GreaterThan
+           com.hp.hpl.jena.sparql.expr.E_GreaterThanOrEqual
+           com.hp.hpl.jena.sparql.expr.E_IsBlank
+           com.hp.hpl.jena.sparql.expr.E_IsLiteral
+           com.hp.hpl.jena.sparql.expr.E_IsIRI
+           com.hp.hpl.jena.sparql.expr.E_IsURI
+           com.hp.hpl.jena.sparql.expr.E_Lang
+           com.hp.hpl.jena.sparql.expr.E_LessThan
+           com.hp.hpl.jena.sparql.expr.E_LessThanOrEqual
+           com.hp.hpl.jena.sparql.expr.E_Multiply
+           com.hp.hpl.jena.sparql.expr.E_NotEquals
+           com.hp.hpl.jena.sparql.expr.E_SameTerm
+           com.hp.hpl.jena.sparql.expr.E_Str
+           com.hp.hpl.jena.sparql.expr.E_Subtract
+           com.hp.hpl.jena.sparql.expr.ExprFunction
+           com.hp.hpl.jena.sparql.expr.ExprVar
+           com.hp.hpl.jena.sparql.expr.NodeValue
+           com.hp.hpl.jena.sparql.syntax.ElementFilter
+           com.hp.hpl.jena.sparql.syntax.Element
+           com.hp.hpl.jena.sparql.syntax.ElementFilter
+           com.hp.hpl.jena.sparql.syntax.ElementGroup
+           com.hp.hpl.jena.sparql.syntax.ElementOptional
+           com.hp.hpl.jena.vocabulary.ReasonerVocabulary))
 
 (defn make-custom-type
   "Builds a datatype for a custom XSD datatype URI based on the String basic type"
   ([uri]
-     (proxy [com.hp.hpl.jena.datatypes.BaseDatatype] [uri]
+     (proxy [BaseDatatype] [uri]
        (unparse [v] (.lexicalValue v))
        (parse [lf] lf)
        (isEqual [v1 v2] (= v1 v2)))))
@@ -94,8 +126,8 @@
 (defn is-filter-expr
   "Tests if one Jena expression is a filter expression"
   ([expr]
-     (or (instance? com.hp.hpl.jena.sparql.expr.ExprFunction expr)
-         (instance? com.hp.hpl.jena.sparql.syntax.ElementFilter expr))))
+     (or (instance? ExprFunction expr)
+         (instance? ElementFilter expr))))
 
 (defn is-var-expr-fn
   "Tests if one Jena expression is a var expression"
@@ -115,12 +147,12 @@
   "Parses a single component of a pattern: variable, literal, URI, etc"
   ([atom pos]
      (cond
-      (instance? com.hp.hpl.jena.sparql.core.Var atom) (keyword (str "?" (.getVarName atom)))
-      (instance? com.hp.hpl.jena.graph.Node_URI atom) (cond
+      (instance? Var atom) (keyword (str "?" (.getVarName atom)))
+      (instance? Node_URI atom) (cond
                                                        (= pos :subject) (rdf-resource (.getURI atom))
                                                        (= pos :predicate) (rdf-property (.getURI atom))
                                                        (= pos :object) (rdf-resource (.getURI atom)))
-      (instance? com.hp.hpl.jena.graph.Node_Literal atom) (parse-pattern-literal atom)
+      (instance? Node_Literal atom) (parse-pattern-literal atom)
       true atom)))
 
 
@@ -166,51 +198,51 @@
   "Parses a filter expression"
   ([expr]
      (cond
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_Str) (parse-filter-expr-1 "str")
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_Lang) (parse-filter-expr-1 expr "lang")
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_Datatype) (parse-filter-expr-1 expr "datatype")
+      (= (class expr) E_Str) (parse-filter-expr-1 "str")
+      (= (class expr) E_Lang) (parse-filter-expr-1 expr "lang")
+      (= (class expr) E_Datatype) (parse-filter-expr-1 expr "datatype")
 
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_Bound) (parse-filter-expr-1 expr "bound")
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_IsIRI) (parse-filter-expr-1 expr "isIRI")
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_IsURI) (parse-filter-expr-1 expr "isURI")
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_IsBlank) (parse-filter-expr-1 expr "isBlank")
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_IsLiteral) (parse-filter-expr-1 expr "isLiteral")
+      (= (class expr) E_Bound) (parse-filter-expr-1 expr "bound")
+      (= (class expr) E_IsIRI) (parse-filter-expr-1 expr "isIRI")
+      (= (class expr) E_IsURI) (parse-filter-expr-1 expr "isURI")
+      (= (class expr) E_IsBlank) (parse-filter-expr-1 expr "isBlank")
+      (= (class expr) E_IsLiteral) (parse-filter-expr-1 expr "isLiteral")
 
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_GreaterThanOrEqual) (parse-filter-expr-2 expr ">=")
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_GreaterThan) (parse-filter-expr-2 expr ">")
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_LessThanOrEqual) (parse-filter-expr-2 expr "<=")
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_LessThan) (parse-filter-expr-2 expr "<")
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_NotEquals) (parse-filter-expr-2 expr "!=")
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_Equals) (parse-filter-expr-2 expr "=")
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_Subtract) (parse-filter-expr-2 expr "-")
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_Add) (parse-filter-expr-2 expr "+")
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_Multiply) (parse-filter-expr-2 expr "*")
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_Divide) (parse-filter-expr-2 expr "div")
-      (= (class expr) com.hp.hpl.jena.sparql.expr.E_SameTerm) (parse-filter-expr-2 expr "sameTerm")
+      (= (class expr) E_GreaterThanOrEqual) (parse-filter-expr-2 expr ">=")
+      (= (class expr) E_GreaterThan) (parse-filter-expr-2 expr ">")
+      (= (class expr) E_LessThanOrEqual) (parse-filter-expr-2 expr "<=")
+      (= (class expr) E_LessThan) (parse-filter-expr-2 expr "<")
+      (= (class expr) E_NotEquals) (parse-filter-expr-2 expr "!=")
+      (= (class expr) E_Equals) (parse-filter-expr-2 expr "=")
+      (= (class expr) E_Subtract) (parse-filter-expr-2 expr "-")
+      (= (class expr) E_Add) (parse-filter-expr-2 expr "+")
+      (= (class expr) E_Multiply) (parse-filter-expr-2 expr "*")
+      (= (class expr) E_Divide) (parse-filter-expr-2 expr "div")
+      (= (class expr) E_SameTerm) (parse-filter-expr-2 expr "sameTerm")
       :else (throw (Exception. (str "Trying to parse unknown/not supported filter: " expr))))))
 
 (defn sparql-to-pattern-filters
   "Parses a SPARQL query and transform it into a pattern and some filters"
   ([sparql-string-or-query]
      (let [query (if (string? sparql-string-or-query)
-                   (com.hp.hpl.jena.query.QueryFactory/create sparql-string-or-query)
+                   (QueryFactory/create sparql-string-or-query)
                    sparql-string-or-query)
            query-pattern-els (.. query getQueryPattern getElements)]
        (flatten-1
         (map (fn [elem]
-               (let [pattern-els (if (instance? com.hp.hpl.jena.sparql.syntax.ElementOptional elem)
+               (let [pattern-els (if (instance? ElementOptional elem)
                                    (.. elem getOptionalElement getElements (get 0) patternElts)
-                                   (if (instance? com.hp.hpl.jena.sparql.syntax.ElementFilter elem)
+                                   (if (instance? ElementFilter elem)
                                      (.iterator [elem])
                                      (.patternElts elem)))
-                     is-optional (if (instance? com.hp.hpl.jena.sparql.syntax.ElementOptional elem)
+                     is-optional (if (instance? ElementOptional elem)
                                    true
                                    false)]
                  (loop [should-continue (.hasNext pattern-els)
                         acum []]
                    (if should-continue
                      (let [next-elt (.next pattern-els)]
-                       (if (instance? com.hp.hpl.jena.sparql.syntax.ElementFilter next-elt)
+                       (if (instance? ElementFilter next-elt)
                          ;; This is a filter
                          (recur (.hasNext pattern-els)
                                 (conj acum (with-meta (parse-filter-expr (.getExpr next-elt))
@@ -240,10 +272,10 @@
         :filters (filter #(:filter (meta %1)) pattern-filters)
         :pattern (filter #(not (:filter (meta %1))) pattern-filters)
         :kind (let [kind (.getQueryType query)]
-                (cond (= kind com.hp.hpl.jena.query.Query/QueryTypeAsk) :ask
-                      (= kind com.hp.hpl.jena.query.Query/QueryTypeConstruct) :construct
-                      (= kind com.hp.hpl.jena.query.Query/QueryTypeDescribe) :describe
-                      (= kind com.hp.hpl.jena.query.Query/QueryTypeSelect) :select
+                (cond (= kind Query/QueryTypeAsk) :ask
+                      (= kind Query/QueryTypeConstruct) :construct
+                      (= kind Query/QueryTypeDescribe) :describe
+                      (= kind Query/QueryTypeSelect) :select
                       true :unknown)) })))
 
 
@@ -255,37 +287,40 @@
   "Builds a filter with two parts"
   ([expression arg-0 arg-1]
      (cond
-      (= expression :>=) (new com.hp.hpl.jena.sparql.expr.E_GreaterThanOrEqual arg-0 arg-1)
-      (= expression :>) (new com.hp.hpl.jena.sparql.expr.E_GreaterThan arg-0 arg-1)
-      (= expression :<=) (new com.hp.hpl.jena.sparql.expr.E_LessThanOrEqual arg-0 arg-1)
-      (= expression :<) (new com.hp.hpl.jena.sparql.expr.E_LessThan arg-0 arg-1)
-      (= expression :!=) (new com.hp.hpl.jena.sparql.expr.E_NotEquals arg-0 arg-1)
-      (= expression :=) (new com.hp.hpl.jena.sparql.expr.E_Equals arg-0 arg-1)
-      (= expression :-) (new com.hp.hpl.jena.sparql.expr.E_Subtract arg-0 arg-1)
-      (= expression :+) (new com.hp.hpl.jena.sparql.expr.E_Add arg-0 arg-1)
-      (= expression :*) (new com.hp.hpl.jena.sparql.expr.E_Multiply arg-0 arg-1)
-      (= expression :div) (new com.hp.hpl.jena.sparql.expr.E_Divide arg-0 arg-1)
-      (= expression :sameTerm) (new com.hp.hpl.jena.sparql.expr.E_SameTerm arg-0 arg-1))))
+      (= expression :>=) (E_GreaterThanOrEqual. arg-0 arg-1)
+      (= expression :>) (E_GreaterThan. arg-0 arg-1)
+      (= expression :<=) (E_LessThanOrEqual. arg-0 arg-1)
+      (= expression :<) (E_LessThan. arg-0 arg-1)
+      (= expression :!=) (E_NotEquals. arg-0 arg-1)
+      (= expression :=) (E_Equals. arg-0 arg-1)
+      (= expression :-) (E_Subtract. arg-0 arg-1)
+      (= expression :+) (E_Add. arg-0 arg-1)
+      (= expression :*) (E_Multiply. arg-0 arg-1)
+      (= expression :div) (E_Divide. arg-0 arg-1)
+      (= expression :sameTerm) (E_SameTerm. arg-0 arg-1))))
 
 (defn- build-filter-one-part
   ([expression arg]
      (cond
-      (= expression :str) (new com.hp.hpl.jena.sparql.expr.E_Str arg)
-      (= expression :lang) (com.hp.hpl.jena.sparql.expr.E_Lang arg)
-      (= expression :datatype) (new com.hp.hpl.jena.sparql.expr.E_Datatype arg)
-      (= expression :bound) (new com.hp.hpl.jena.sparql.expr.E_Bound arg)
-      (= expression :isIRI) (com.hp.hpl.jena.sparql.expr.E_IsIRI arg)
-      (= expression :isURI) (new com.hp.hpl.jena.sparql.expr.E_IsURI arg)
-      (= expression :isBlank) (com.hp.hpl.jena.sparql.expr.E_IsBlank arg)
-      (= expression :isLiteral) (new com.hp.hpl.jena.sparql.expr.E_IsLiteral arg))))
+      (= expression :str) (E_Str. arg)
+      (= expression :lang) (E_Lang. arg)
+      (= expression :datatype) (E_Datatype. arg)
+      (= expression :bound) (E_Bound. arg)
+      (= expression :isIRI) (E_IsIRI. arg)
+      (= expression :isURI) (E_IsURI. arg)
+      (= expression :isBlank) (E_IsBlank. arg)
+      (= expression :isLiteral) (E_IsLiteral. arg))))
 
 (defn- build-filter-arg
   ([builder arg]
      (cond
-      (keyword? arg) (new com.hp.hpl.jena.sparql.expr.ExprVar (.replace (keyword-to-string arg) "?" ""))
+      (keyword? arg) (ExprVar. (.replace (keyword-to-string arg) "?" ""))
       (map? arg) (build-filter builder arg)
-      (is-resource arg) (com.hp.hpl.jena.sparql.expr.NodeValue/makeNode (com.hp.hpl.jena.graph.Node/createURI (resource-id arg)))
-      true (com.hp.hpl.jena.sparql.expr.NodeValue/makeNode (literal-lexical-form arg) (literal-language arg) (literal-datatype-uri arg)))))
+      (is-resource arg) (NodeValue/makeNode (Node/createURI (resource-id arg)))
+      true (NodeValue/makeNode
+            (literal-lexical-form arg)
+            (literal-language arg)
+            (literal-datatype-uri arg)))))
 
 (defn build-filter-fn
   ([builder filter]
@@ -300,29 +335,29 @@
   "Transforms a query atom (subject, predicate or object) in the suitable Jena object for a Jena query"
   ([atom]
      (if (keyword? atom)
-       (com.hp.hpl.jena.sparql.core.Var/alloc (keyword-to-variable atom))
+       (Var/alloc (keyword-to-variable atom))
        (if (is-literal atom)
          (if (= (find-jena-datatype (literal-datatype-uri atom)) (find-jena-datatype :xmlliteral))
-           (com.hp.hpl.jena.graph.Node/createLiteral (literal-lexical-form atom) (literal-language atom) false)
-           (com.hp.hpl.jena.graph.Node/createLiteral (literal-lexical-form atom) (literal-language atom) (find-jena-datatype (literal-datatype-uri atom))))
-         (if (is-blank atom) (com.hp.hpl.jena.graph.Node/createAnon (com.hp.hpl.jena.rdf.model.AnonId. (resource-id atom)))
-             (com.hp.hpl.jena.graph.Node/createURI  (if (is-resource atom) (to-string atom)
-                                                        (str atom))))))))
+           (Node/createLiteral (literal-lexical-form atom) (literal-language atom) false)
+           (Node/createLiteral (literal-lexical-form atom) (literal-language atom) (find-jena-datatype (literal-datatype-uri atom))))
+         (if (is-blank atom) (Node/createAnon (AnonId. (resource-id atom)))
+             (Node/createURI (if (is-resource atom) (to-string atom)
+                                 (str atom))))))))
 
 (defn build-query-fn
   "Transforms a query representation into a Jena Query object"
   ([builder query]
-     (let [built-query (com.hp.hpl.jena.query.Query.)
+     (let [built-query (Query.)
            pattern (:pattern query)
            built-patterns (reduce (fn [acum item]
                                     (let [building (:building acum)
                                           optional (:optional acum)]
                                       (if (:optional (meta item))
                                         ;; add it to the optional elem
-                                        (let [optg (com.hp.hpl.jena.sparql.syntax.ElementGroup.)]
-                                          (.addTriplePattern optg (com.hp.hpl.jena.graph.Triple/create (build-query-atom (nth item 0))
-                                                                                                       (build-query-atom (nth item 1))
-                                                                                                       (build-query-atom (nth item 2))))
+                                        (let [optg (ElementGroup.)]
+                                          (.addTriplePattern optg (Triple/create (build-query-atom (nth item 0))
+                                                                                 (build-query-atom (nth item 1))
+                                                                                 (build-query-atom (nth item 2))))
                                           {:building building
                                            :optional (conj optional optg)})
                                         ;; Is not an optional triple
@@ -331,7 +366,7 @@
                                                                                                              (build-query-atom (nth item 2))))
                                             {:building building
                                              :optional optional}))))
-                                  {:building (com.hp.hpl.jena.sparql.syntax.ElementGroup.)
+                                  {:building (ElementGroup.)
                                    :optional []}
                                   pattern)
            built-pattern (do
@@ -342,7 +377,7 @@
            built-filters (loop [bfs (map (fn [f] (build-filter builder f)) (if (nil? (:filters query)) [] (:filters query)))]
                            (if (not (empty? bfs))
                              (let [bf (first bfs)]
-                               (.addElement built-pattern (com.hp.hpl.jena.sparql.syntax.ElementFilter. bf))
+                               (.addElement built-pattern (ElementFilter. bf))
                                (recur (rest bfs)))))]
        (do
          (loop [idx 0]
@@ -351,10 +386,10 @@
                (.addResultVar built-query (keyword-to-variable (nth (:vars query) idx)))
                (recur (+ idx 1)))))
          (.setQueryPattern built-query built-pattern)
-         (.setQueryType built-query (cond (= :ask (:kind query)) com.hp.hpl.jena.query.Query/QueryTypeAsk
-                                          (= :construct (:kind query)) com.hp.hpl.jena.query.Query/QueryTypeConstruct
-                                          (= :describe (:kind query)) com.hp.hpl.jena.query.Query/QueryTypeDescribe
-                                          (= :select (:kind query)) com.hp.hpl.jena.query.Query/QueryTypeSelect))
+         (.setQueryType built-query (cond (= :ask (:kind query)) Query/QueryTypeAsk
+                                          (= :construct (:kind query)) Query/QueryTypeConstruct
+                                          (= :describe (:kind query)) Query/QueryTypeDescribe
+                                          (= :select (:kind query)) Query/QueryTypeSelect))
          (when (:limit query)
            (.setLimit built-query (:limit query)))
          (when (:offset query)
