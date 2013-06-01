@@ -3,10 +3,22 @@
 ;; @date 09.05.2010
 
 (ns plaza.rdf.implementations.jena
-  (:use plaza.utils
-        plaza.rdf.core
-        plaza.rdf.sparql
-        plaza.rdf.implementations.common)
+  (:use [plaza.rdf.core :only [*rdf-ns* *rdf-ns-table* alter-root-model
+                               alter-root-model-builder-fn build-model
+                               create-blank-node create-literal create-property
+                               create-resource create-typed-literal
+                               critical-read critical-write expand-ns
+                               find-datatype is-property literal-datatype-uri
+                               literal-language literal-lexical-form
+                               model-critical-read parse-format output-string
+                               resource-id to-java to-string walk-triples
+                               JavaObjectWrapper RDFDatatypeMapper RDFModel
+                               RDFNode RDFPrintable RDFResource]]
+        [plaza.rdf.sparql :only [*sparql-framework* alter-root-sparql-framework
+                                 build-query pattern-bind pattern-reject-unbound
+                                 sparql-to-query SparqlFramework]]
+        plaza.rdf.implementations.common
+        plaza.utils)
   (:require [clojure.tools.logging :as log])
   (:import com.hp.hpl.jena.datatypes.xsd.XSDDatatype
            com.hp.hpl.jena.datatypes.xsd.impl.XMLLiteralType
