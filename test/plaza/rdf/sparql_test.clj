@@ -125,11 +125,6 @@ WHERE {
         res (pattern-bind pattern binding-map)]
     (first (first res)) => s))
 
-(fact "#'pattern-bind"
-  (let [pattern (make-pattern [[:?x rdf:type :http://test.com/Test]])
-        binding-map {:?x "foo"}]
-    (pattern-bind pattern binding-map) => nil))
-
 (fact "make-pattern-build-2"
   (let [framework (plaza.rdf.implementations.jena.JenaSparqlFramework.)
         pattern (make-pattern [[:?x rdf:type :http://test.com/Test]
