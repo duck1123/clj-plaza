@@ -299,26 +299,27 @@ with results binding variables in que query pattern"
 
 ;; Triples <-> Pattern transformations
 
+(defn pattern-bind*
+  [t binding-map]
+  (let [[s p o] t
+        sp (if-let [subj (get binding-map s)]
+             (triple-subject subj)
+             s)
+        pp (if-let [pred (get binding-map p)]
+             (triple-predicate pred)
+             p)
+        op (if-let [obj (get binding-map o)]
+             (triple-object obj)
+             o)]
+    (if (:optional (meta t))
+      (with-meta [sp pp op] {:optional true})
+      [sp pp op])))
+
 (defn pattern-bind
   "Binds variables in a pattern with some values"
   [pattern binding-map]
   (vec
-   (map
-    (fn [t]
-      (let [[s p o] t
-            sp (if (get binding-map s)
-                 (triple-subject (get binding-map s))
-                 s)
-            pp (if (get binding-map p)
-                 (triple-predicate (get binding-map p))
-                 p)
-            op (if (get binding-map o)
-                 (triple-object (get binding-map o))
-                 o)]
-        (if (:optional (meta t))
-          (with-meta [sp pp op] {:optional true})
-          [sp pp op])))
-    pattern)))
+   (map #(pattern-bind* % binding-map) pattern)))
 
 (defn pattern-reject-unbound
   "Binds variables in a pattern rejecting the pattern triples that has not been bound"
