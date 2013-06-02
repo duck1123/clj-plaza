@@ -15,12 +15,10 @@
            (org.openrdf.sail.inferencer.fc ForwardChainingRDFSInferencer)))
 
 ;; Loading RDFa java
-
-                                        ;(Class/forName "net.rootdev.javardfa.RDFaReader")
+;; (Class/forName "net.rootdev.javardfa.RDFaReader")
 
 ;; declaration of symbols
 (declare parse-sesame-object)
-
 
 ;; Shared functions
 
@@ -85,14 +83,20 @@
   "Transforms a query result into a dicitionary of bindings"
   [model result]
   (let [vars (iterator-seq (.iterator result))]
-    (reduce (fn [acum item] (assoc acum (keyword (str "?" (.getName item))) (parse-sesame-object model (.getValue item)))) {} vars)))
+    (reduce
+     (fn [acum item]
+       (assoc acum (keyword (str "?" (.getName item)))
+              (parse-sesame-object model (.getValue item))))
+     {} vars)))
 
 (defn- model-query-fn
   "Queries a model and returns a map of bindings"
   [model connection query]
-  (let [query-string (if (string? query) query (str (build-query *sparql-framework* query)))]
-                                        ;(println (str "QUERYING SESAME WITH: " query-string))
-    (let [tuple-query (.prepareTupleQuery connection org.openrdf.query.QueryLanguage/SPARQL query-string)
+  (let [query-string (if (string? query)
+                       query
+                       (str (build-query *sparql-framework* query)))]
+    (let [tuple-query (.prepareTupleQuery connection org.openrdf.query.QueryLanguage/SPARQL
+                                          query-string)
           result (.evaluate tuple-query)]
       (loop [acum []
              should-continue (.hasNext result)]
@@ -105,10 +109,11 @@
   "Queries a model and returns a list of triple sets with results binding variables in que query pattern"
   [model connection query-or-string]
   (let [query (if (string? query-or-string) (sparql-to-query query-or-string) query-or-string)
-        query-string (if (string? query-or-string) query-or-string (str (build-query *sparql-framework* query-or-string)))
+        query-string (if (string? query-or-string)
+                       query-or-string
+                       (str (build-query *sparql-framework* query-or-string)))
         results (model-query-fn model connection query-string)]
     (map #(pattern-bind (:pattern query) %1) results)))
-
 
 ;; Sesame implementation
 
@@ -150,7 +155,6 @@
   (hashCode [resource]
     (.hashCode (resource-id resource))))
 
-
 (deftype SesameBlank [res]
   RDFResource RDFNode JavaObjectWrapper RDFPrintable
   (to-java [resource]
@@ -188,7 +192,6 @@
   (equals [resource other-resource]
     (= (resource-id resource) (resource-id other-resource))))
 
-
 (deftype SesameLiteral [res]
   RDFResource RDFNode RDFDatatypeMapper JavaObjectWrapper RDFPrintable
   (to-java [resource]
@@ -207,7 +210,9 @@
   (is-literal [resource]
     true)
   (resource-id [resource]
-    (if (not (= (.getLanguage res) "")) (str (.getLabel res) "@" (.getLanguage res)) (.getLabel res)))
+    (if (not (= (.getLanguage res) ""))
+      (str (.getLabel res) "@" (.getLanguage res))
+      (.getLabel res)))
   (qname-prefix [resource]
     (throw (Exception. "Cannot retrieve qname-prefix value for a literal")))
   (qname-local [resource]
@@ -308,7 +313,6 @@
     (and (= (class resource) (class other-resource))
          (= (resource-id resource) (resource-id other-resource)))))
 
-
 (deftype SesameModel [mod]
   RDFModel RDFDatatypeMapper JavaObjectWrapper RDFPrintable
   (to-java [model]
@@ -337,7 +341,8 @@
         (plaza.rdf.implementations.sesame.SesameProperty.
          (.createURI (ValueFactoryImpl/getInstance) (keyword-to-string uri)))
         (plaza.rdf.implementations.sesame.SesameProperty.
-         (.createURI (ValueFactoryImpl/getInstance) (expand-ns *rdf-ns* (keyword-to-string uri)))))))
+         (.createURI (ValueFactoryImpl/getInstance)
+                     (expand-ns *rdf-ns* (keyword-to-string uri)))))))
   (create-blank-node [model]
     (plaza.rdf.implementations.sesame.SesameBlank.
      (.createBNode (ValueFactoryImpl/getInstance) (str (.getTime (java.util.Date.))))))
@@ -374,7 +379,12 @@
   (add-triples [model triples]
     (let [connection (.getConnection mod)
           graph (let [g (org.openrdf.model.impl.GraphImpl.)]
-                  (doseq [[ms mp mo] triples] (.add g (to-java ms) (to-java mp) (to-java mo) (into-array org.openrdf.model.Resource []))) g)]
+                  (doseq [[ms mp mo] triples]
+                    (.add g (to-java ms)
+                          (to-java mp)
+                          (to-java mo)
+                          (into-array org.openrdf.model.Resource [])))
+                  g)]
       (try
         (do
           (.setAutoCommit connection false)
@@ -383,7 +393,6 @@
         (catch RepositoryException e (.rollback connection))
         (finally (.close connection)))
       model))
-
   (remove-triples [model triples]
     (let [connection (.getConnection mod)]
       (try
@@ -403,28 +412,32 @@
     (let [connection (.getConnection mod)]
       (try
         (do
-          (let [stmts (.asList (.getStatements connection nil nil nil true (into-array org.openrdf.model.Resource [])))
-                res (map (fn [st]
-                           (let [s (let [subj (.getSubject st)]
-                                     (if (instance? org.openrdf.model.Resource subj)
-                                       (if (instance? org.openrdf.model.BNode subj)
-                                         (create-blank-node model (str (.getID subj)))
-                                         (create-resource model (str subj)))
-                                       (create-resource model (str subj))))
-                                 p (create-property model (str (.getPredicate st)))
-                                 o (let [obj (.getObject st)]
-                                     (if (instance? org.openrdf.model.Literal obj)
-                                       (if (or (nil? (.getDatatype obj))
-                                               (= (.getDatatype obj) "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"))
-                                         (create-literal model (.getLabel obj) (.getLanguage obj))
-                                         (create-typed-literal model (.getLabel obj) (str (.getDatatype obj))))
-                                       (if (instance? org.openrdf.model.Resource obj)
-                                         (if (instance? org.openrdf.model.BNode obj)
-                                           (create-blank-node model (str (.getID obj)))
-                                           (create-resource model (str obj)))
-                                         (create-resource model (str obj)))))]
-                             (f s p o)))
-                         stmts)]
+          (let [stmts (.asList (.getStatements connection nil nil nil true
+                                               (into-array org.openrdf.model.Resource [])))
+                res (map
+                     (fn [st]
+                       (let [s (let [subj (.getSubject st)]
+                                 (if (instance? org.openrdf.model.Resource subj)
+                                   (if (instance? org.openrdf.model.BNode subj)
+                                     (create-blank-node model (str (.getID subj)))
+                                     (create-resource model (str subj)))
+                                   (create-resource model (str subj))))
+                             p (create-property model (str (.getPredicate st)))
+                             o (let [obj (.getObject st)]
+                                 (if (instance? org.openrdf.model.Literal obj)
+                                   (if (or (nil? (.getDatatype obj))
+                                           (= (.getDatatype obj)
+                                              "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"))
+                                     (create-literal model (.getLabel obj) (.getLanguage obj))
+                                     (create-typed-literal model (.getLabel obj)
+                                                           (str (.getDatatype obj))))
+                                   (if (instance? org.openrdf.model.Resource obj)
+                                     (if (instance? org.openrdf.model.BNode obj)
+                                       (create-blank-node model (str (.getID obj)))
+                                       (create-resource model (str obj)))
+                                     (create-resource model (str obj)))))]
+                         (f s p o)))
+                     stmts)]
             (.commit connection)
             res))
         (catch RepositoryException e (.rollback connection))
@@ -436,14 +449,16 @@
           connection (.getConnection mod)]
       (try
         (if (string? stream)
-          (.add connection (plaza.utils/grab-document-url stream) stream format (into-array org.openrdf.model.Resource []))
+          (.add connection (plaza.utils/grab-document-url stream)
+                stream format (into-array org.openrdf.model.Resource []))
           (.add connection stream *rdf-ns* format (into-array org.openrdf.model.Resource [])))
         (finally (.close connection)))
       model))
   (output-string  [model writer format]
     (do
       (let [connection (.getConnection mod)
-            writer (org.openrdf.rio.Rio/createWriter (translate-plaza-format (parse-format format)) writer)]
+            writer (org.openrdf.rio.Rio/createWriter
+                    (translate-plaza-format (parse-format format)) writer)]
         (try
           (.export connection writer (into-array org.openrdf.model.Resource []))
           (finally (.close connection)))))
@@ -463,7 +478,6 @@
         (model-query-triples-fn model connection query)
         (finally (.close connection))))))
 
-
 (deftype SesameSparqlFramework []
   SparqlFramework
   (parse-sparql-to-query [framework sparql]
@@ -482,18 +496,19 @@
         (keyword s)
         (keyword (str "?" s))))))
 
-
 (defn- parse-sesame-object
   "Parses any Sesame relevant object into its plaza equivalent type"
   [model sesame]
   (cond (instance? org.openrdf.model.URI sesame) (create-resource model (str sesame))
         (instance? org.openrdf.model.BNode sesame) (create-blank-node model (str (.getID sesame)))
-        (instance? org.openrdf.model.Literal sesame) (if (or (nil? (.getDatatype sesame))
-                                                             (= (.getDatatype sesame) "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"))
-                                                       (create-literal model (.stringValue sesame) (.getLanguage sesame))
-                                                       (create-typed-literal model (sesame-typed-literal-tojava sesame) (str (.getDatatype sesame))))
-        true (throw (Exception. (str "Unable to parse object " sesame " of type " (class sesame))))))
-
+        (instance? org.openrdf.model.Literal sesame)
+        (if (or (nil? (.getDatatype sesame))
+                (= (.getDatatype sesame) "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"))
+          (create-literal model (.stringValue sesame) (.getLanguage sesame))
+          (create-typed-literal model (sesame-typed-literal-tojava sesame)
+                                (str (.getDatatype sesame))))
+        true
+        (throw (Exception. (str "Unable to parse object " sesame " of type " (class sesame))))))
 
 ;; Initialization
 

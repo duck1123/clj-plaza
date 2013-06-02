@@ -68,7 +68,10 @@
               (is-literal atom))
           false
           true
-          (= (qname-prefix atom) (if (nil? (find-ns-registry prefix)) (keyword-to-string prefix) (find-ns-registry prefix))))))
+          (= (qname-prefix atom)
+             (if (nil? (find-ns-registry prefix))
+               (keyword-to-string prefix)
+               (find-ns-registry prefix))))))
 
 (defn qname-local?
   "Matches a URI or curie against a triple atom"
@@ -118,14 +121,14 @@
               (= (literal-language atom) lang))
          false))))
 
-
 (defn datatype?
   "Matches the value or the value and language of a literal"
   [data-uri]
   (fn [triple atom]
     (if (and (instance? plaza.rdf.core.RDFResource atom)
              (is-literal atom))
-      (= (find-datatype *rdf-model* (literal-datatype-uri atom)) (find-datatype *rdf-model* data-uri))
+      (= (find-datatype *rdf-model* (literal-datatype-uri atom))
+         (find-datatype *rdf-model* data-uri))
       false)))
 
 (defn is-variable?

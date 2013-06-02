@@ -108,7 +108,6 @@
       "string" (keyword lit)
       nil)))
 
-
 (defn supported-datatype?
   "Returns true if the datatype sym or URI string is supported"
   [sym]
@@ -157,12 +156,13 @@
    (instance? Node_Literal atom) (parse-pattern-literal atom)
    true atom))
 
-
 (defn parse-literal-lexical
   [lit]
   (let [parts-a (.split lit "\\^\\^")
         val-a (aget parts-a 0)
-        datatype (if (= (alength parts-a) 2) (aget (.split (aget (.split (aget parts-a 1) "<") 1) ">") 0) "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral")
+        datatype (if (= (alength parts-a) 2)
+                   (aget (.split (aget (.split (aget parts-a 1) "<") 1) ">") 0)
+                   "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral")
         parts-b (.split val-a "@")
         val (let [val-tmp (aget parts-b 0)]
               (if (and (.startsWith val-tmp "\"")
@@ -194,7 +194,6 @@
   {:expression (keyword symbol)
    :kind :one-part
    :args [(parse-next-filter-expr (.getArg expr 1))]})
-
 
 (defn parse-filter-expr
   "Parses a filter expression"
@@ -252,11 +251,12 @@
                                            :optional is-optional})))
                       ;; A regular (maybe optional) expression
                       (recur (.hasNext pattern-els)
-                             (conj acum (with-meta [(parse-pattern-atom (.getSubject next-elt) :subject)
-                                                    (parse-pattern-atom (.getPredicate next-elt) :predicate)
-                                                    (parse-pattern-atom (.getObject next-elt) :object)]
-                                          {:optional is-optional
-                                           :filter false})))))
+                             (conj acum
+                                   (with-meta [(parse-pattern-atom (.getSubject next-elt) :subject)
+                                               (parse-pattern-atom (.getPredicate next-elt) :predicate)
+                                               (parse-pattern-atom (.getObject next-elt) :object)]
+                                     {:optional is-optional
+                                      :filter false})))))
                   acum))))
           query-pattern-els))))
 
@@ -280,10 +280,7 @@
                    (= kind Query/QueryTypeSelect) :select
                    true :unknown)) }))
 
-
-
 ;; bulding of queries and filters
-
 
 (defn- build-filter-two-parts
   "Builds a filter with two parts"
@@ -351,32 +348,38 @@
   [builder query]
   (let [built-query (Query.)
         pattern (:pattern query)
-        built-patterns (reduce (fn [acum item]
-                                 (let [building (:building acum)
-                                       optional (:optional acum)]
-                                   (if (:optional (meta item))
-                                     ;; add it to the optional elem
-                                     (let [optg (ElementGroup.)]
-                                       (.addTriplePattern optg (Triple/create (build-query-atom (nth item 0))
-                                                                              (build-query-atom (nth item 1))
-                                                                              (build-query-atom (nth item 2))))
-                                       {:building building
+        built-patterns (reduce
+                        (fn [acum item]
+                          (let [building (:building acum)
+                                optional (:optional acum)]
+                            (if (:optional (meta item))
+                              ;; add it to the optional elem
+                              (let [optg (ElementGroup.)]
+                                (.addTriplePattern optg
+                                                   (Triple/create (build-query-atom (nth item 0))
+                                                                  (build-query-atom (nth item 1))
+                                                                  (build-query-atom (nth item 2))))
+                                {:building building
                                         :optional (conj optional optg)})
-                                     ;; Is not an optional triple
-                                     (do (.addTriplePattern building (com.hp.hpl.jena.graph.Triple/create (build-query-atom (nth item 0))
-                                                                                                          (build-query-atom (nth item 1))
-                                                                                                          (build-query-atom (nth item 2))))
-                                         {:building building
-                                          :optional optional}))))
-                               {:building (ElementGroup.)
-                                :optional []}
-                               pattern)
+                              ;; Is not an optional triple
+                              (do (.addTriplePattern building
+                                                     (com.hp.hpl.jena.graph.Triple/create
+                                                      (build-query-atom (nth item 0))
+                                                      (build-query-atom (nth item 1))
+                                                      (build-query-atom (nth item 2))))
+                                  {:building building
+                                   :optional optional}))))
+                        {:building (ElementGroup.)
+                         :optional []}
+                        pattern)
         built-pattern (do
                         (when-not (.isEmpty (:optional built-patterns))
                           (doseq [optg (:optional built-patterns)]
-                            (.addElement (:building built-patterns) (com.hp.hpl.jena.sparql.syntax.ElementOptional. optg))))
+                            (.addElement (:building built-patterns)
+                                         (com.hp.hpl.jena.sparql.syntax.ElementOptional. optg))))
                         (:building built-patterns))
-        built-filters (loop [bfs (map (fn [f] (build-filter builder f)) (if (nil? (:filters query)) [] (:filters query)))]
+        built-filters (loop [bfs (map (fn [f] (build-filter builder f))
+                                      (if (nil? (:filters query)) [] (:filters query)))]
                         (if (not (empty? bfs))
                           (let [bf (first bfs)]
                             (.addElement built-pattern (ElementFilter. bf))

@@ -254,7 +254,9 @@
      (rdf-date (java.util.Date.)))
   ([d]
      (if (instance? java.util.Date d)
-       (rdf-date (+ 1900 (.getYear d)) (.getMonth d) (.getDate d))
+       (rdf-date (+ 1900 (.getYear d))
+                 (.getMonth d)
+                 (.getDate d))
        (if (instance? java.util.Calendar d)
          (rdf-typed-literal d)
          (throw (Exception. (str "Don't know how to build a date from " d))))))
