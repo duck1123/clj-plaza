@@ -71,7 +71,10 @@
   "Transforms a query result into a dicitionary of bindings"
   [model result]
   (let [vars (iterator-seq (.varNames result))]
-    (reduce (fn [acum item] (assoc acum (keyword (str "?" item)) (parse-jena-object model (.get result item)))) {} vars)))
+    (reduce (fn [acum item]
+              (assoc acum (keyword (str "?" item))
+                     (parse-jena-object model (.get result item))))
+            {} vars)))
 
 (defn- model-query-fn
   "Queries a model and returns a map of bindings"
@@ -88,7 +91,8 @@
      (map #(process-model-query-result model %1) results))))
 
 (defn- model-query-triples-fn
-  "Queries a model and returns a list of triple sets with results binding variables in que query pattern"
+  "Queries a model and returns a list of triple sets
+ with results binding variables in que query pattern"
   [model query-or-string]
   (let [query (if (string? query-or-string) (sparql-to-query query-or-string) query-or-string)
         query-string (if (string? query-or-string)
@@ -378,11 +382,11 @@
        (loop [acum triples]
          (when (not (empty? acum))
            (let [[ms mp mo] (first acum)]
-             (.remove mod (first
-                           (iterator-seq
-                            (.listStatements mod (to-java ms)
-                                             (to-java (create-property model mp))
-                                             (to-java mo)))))
+             (.remove mod
+                      (first (iterator-seq
+                              (.listStatements mod (to-java ms)
+                                               (to-java (create-property model mp))
+                                               (to-java mo)))))
              (recur (rest acum))))))))
   (walk-triples [model f]
     (critical-read
@@ -478,7 +482,8 @@
       (create-property model (str jena))
       (if (instance? com.hp.hpl.jena.rdf.model.Literal jena)
         (if (or (nil? (.getDatatypeURI jena))
-                (= (.getDatatypeURI jena) "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"))
+                (= (.getDatatypeURI jena)
+                   "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"))
           (create-literal model (.getValue jena) (.getLanguage jena))
           (create-typed-literal model (.getValue jena) (.getDatatypeURI jena)))
         (throw (Exception. (str "Unable to parse object " jena " of type " (class jena))))))))

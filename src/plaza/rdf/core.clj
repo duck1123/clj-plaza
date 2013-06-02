@@ -497,7 +497,9 @@
       (if (< idx max)
         (let [t (nth triples idx)
               key (to-string (subject-from-triple t))
-              acump (if (get acum key) (assoc acum key (conj (get acum key) t)) (assoc acum key [t]))]
+              acump (if (get acum key)
+                      (assoc acum key (conj (get acum key) t))
+                      (assoc acum key [t]))]
           (recur acump max (inc idx)))
         (vals acum)))))
 
