@@ -272,15 +272,15 @@
   [sparql-string]
   (let [query (com.hp.hpl.jena.query.QueryFactory/create sparql-string)
         pattern-filters (sparql-to-pattern-filters query)]
-    { :vars (vec (map (fn [v] (keyword v)) (.getResultVars query)))
-     :filters (filter #(:filter (meta %1)) pattern-filters)
-     :pattern (filter #(not (:filter (meta %1))) pattern-filters)
-     :kind (let [kind (.getQueryType query)]
-             (cond (= kind Query/QueryTypeAsk) :ask
-                   (= kind Query/QueryTypeConstruct) :construct
-                   (= kind Query/QueryTypeDescribe) :describe
-                   (= kind Query/QueryTypeSelect) :select
-                   true :unknown)) }))
+    {:vars (mapv keyword (.getResultVars query))
+     :filters (filter (comp :filter meta)     pattern-filters)
+     :pattern (filter (comp not :filter meta) pattern-filters)
+     :kind (condp = (.getQueryType query)
+             Query/QueryTypeAsk       :ask
+             Query/QueryTypeConstruct :construct
+             Query/QueryTypeDescribe  :describe
+             Query/QueryTypeSelect    :select
+             :unknown)}))
 
 ;; bulding of queries and filters
 
