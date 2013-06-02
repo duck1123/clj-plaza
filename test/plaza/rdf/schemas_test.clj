@@ -41,7 +41,9 @@
         (is (nil? (property-alias modelpp :foo))))))
 
 (deftest test-to-map
-  (let [m (to-map *test-model* [[:test ["http://test.com/" :name] "name"] [:test ["http://test.com/" :price] (d 120)] [:test :number (d 10)]])]
+  (let [m (to-map *test-model* [[:test ["http://test.com/" :name] "name"]
+                                [:test ["http://test.com/" :price] (d 120)]
+                                [:test :number (d 10)]])]
     (is (= m {:name (rdf-resource "name") :price (d 120) :number (d 10)}))))
 
 (deftest test-to-pattern
