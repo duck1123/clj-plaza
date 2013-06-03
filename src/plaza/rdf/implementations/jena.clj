@@ -11,9 +11,7 @@
                                find-datatype is-property literal-datatype-uri
                                literal-language literal-lexical-form
                                model-critical-read parse-format output-string
-                               resource-id to-java to-string walk-triples
-                               JavaObjectWrapper RDFDatatypeMapper RDFModel
-                               RDFNode RDFPrintable RDFResource]]
+                               resource-id to-java to-string walk-triples]]
         [plaza.rdf.sparql :only [*sparql-framework* alter-root-sparql-framework
                                  build-query pattern-bind pattern-reject-unbound
                                  sparql-to-query SparqlFramework]]
@@ -24,7 +22,11 @@
            com.hp.hpl.jena.datatypes.xsd.impl.XMLLiteralType
            com.hp.hpl.jena.graph.Node
            com.hp.hpl.jena.graph.Triple
+           com.hp.hpl.jena.rdf.model.AnonId
+           com.hp.hpl.jena.rdf.model.Literal
            com.hp.hpl.jena.rdf.model.ModelFactory
+           com.hp.hpl.jena.rdf.model.impl.PropertyImpl
+           com.hp.hpl.jena.rdf.model.impl.ResourceImpl
            com.hp.hpl.jena.reasoner.rulesys.RDFSRuleReasonerFactory
            com.hp.hpl.jena.shared.Lock
            com.hp.hpl.jena.sparql.core.Var
@@ -53,7 +55,14 @@
            com.hp.hpl.jena.query.DatasetFactory
            com.hp.hpl.jena.query.QueryExecutionFactory
            com.hp.hpl.jena.query.QueryFactory
-           com.hp.hpl.jena.vocabulary.ReasonerVocabulary))
+           com.hp.hpl.jena.vocabulary.ReasonerVocabulary
+           java.util.GregorianCalendar
+           plaza.rdf.core.JavaObjectWrapper
+           plaza.rdf.core.RDFDatatypeMapper
+           plaza.rdf.core.RDFModel
+           plaza.rdf.core.RDFNode
+           plaza.rdf.core.RDFPrintable
+           plaza.rdf.core.RDFResource))
 
 ;; Loading RDFa java
 
@@ -314,45 +323,45 @@
     (if (instance? plaza.rdf.core.RDFResource uri)
       uri
       (if (.startsWith (keyword-to-string uri) "http://")
-        (plaza.rdf.implementations.jena.JenaResource.
+        (JenaResource.
          (.createResource mod (keyword-to-string uri)))
-        (plaza.rdf.implementations.jena.JenaResource.
+        (JenaResource.
          (.createResource mod (str *rdf-ns* (keyword-to-string uri)))))))
   (create-property [model ns local]
     (.createProperty mod (expand-ns ns local)))
   (create-property [model uri]
-    (if (instance? plaza.rdf.core.RDFResource uri)
+    (if (instance? RDFResource uri)
       (if (is-property uri)
         uri
-        (plaza.rdf.implementations.jena.JenaProperty.
+        (JenaProperty.
          (.createProperty mod (str uri))))
       (if (.startsWith (keyword-to-string uri) "http://")
-        (plaza.rdf.implementations.jena.JenaProperty.
+        (JenaProperty.
          (.createProperty mod (keyword-to-string uri)))
-        (plaza.rdf.implementations.jena.JenaProperty.
+        (JenaProperty.
          (.createProperty mod *rdf-ns* (keyword-to-string uri))))))
   (create-blank-node [model]
-    (plaza.rdf.implementations.jena.JenaBlank.
-     (.createResource mod (com.hp.hpl.jena.rdf.model.AnonId.))))
+    (JenaBlank.
+     (.createResource mod (AnonId.))))
   (create-blank-node [model id]
     (let [anon-id (keyword-to-string id)]
-      (plaza.rdf.implementations.jena.JenaBlank.
-       (.createResource mod (com.hp.hpl.jena.rdf.model.AnonId. anon-id)))))
+      (JenaBlank.
+       (.createResource mod (AnonId. anon-id)))))
   (create-literal [model lit]
-    (plaza.rdf.implementations.jena.JenaLiteral.
+    (JenaLiteral.
      (.createLiteral mod lit false)))
   (create-literal [model lit lang]
-    (plaza.rdf.implementations.jena.JenaLiteral.
+    (JenaLiteral.
      (.createLiteral mod lit lang)))
   (create-typed-literal [model lit]
-    (plaza.rdf.implementations.jena.JenaTypedLiteral.
+    (JenaTypedLiteral.
      (.createTypedLiteral mod lit)))
   (create-typed-literal [model lit type]
     (let [dt (find-datatype model type)]
-      (if (instance? java.util.GregorianCalendar lit)
-        (plaza.rdf.implementations.jena.JenaTypedLiteral.
+      (if (instance? GregorianCalendar lit)
+        (JenaTypedLiteral.
          (.createTypedLiteral mod lit))
-        (plaza.rdf.implementations.jena.JenaTypedLiteral.
+        (JenaTypedLiteral.
          (.createTypedLiteral mod lit dt)))))
   (critical-write [model f]
     (do
@@ -396,20 +405,20 @@
          (map
           (fn [st]
             (let [s (let [subj (.getSubject st)]
-                      (if (instance? com.hp.hpl.jena.rdf.model.impl.ResourceImpl subj)
+                      (if (instance? ResourceImpl subj)
                         (if (.isAnon subj)
                           (create-blank-node model (str (.getId subj)))
                           (create-resource model (str subj)))
                         (create-resource model (str subj))))
                   p (create-property model (str (.getPredicate st)))
                   o (let [obj (.getObject st)]
-                      (if (instance? com.hp.hpl.jena.rdf.model.Literal obj)
+                      (if (instance? Literal obj)
                         (if (or (nil? (.getDatatypeURI obj))
                                 (= (.getDatatypeURI obj)
                                    "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"))
                           (create-literal model (.getValue obj) (.getLanguage obj))
                           (create-typed-literal model (.getValue obj) (.getDatatypeURI obj)))
-                        (if (instance? com.hp.hpl.jena.rdf.model.impl.ResourceImpl obj)
+                        (if (instance? ResourceImpl obj)
                           (if (.isAnon obj)
                             (create-blank-node model (str (.getId obj)))
                             (create-resource model (str obj)))
@@ -474,13 +483,13 @@
 (defn parse-jena-object
   "Parses any Jena relevant object into its plaza equivalent type"
   [model jena]
-  (if (instance? com.hp.hpl.jena.rdf.model.impl.ResourceImpl jena)
+  (if (instance? ResourceImpl jena)
     (if (.isAnon jena)
       (create-blank-node model (str (.getId jena)))
       (create-resource model (str jena)))
-    (if (instance? com.hp.hpl.jena.rdf.model.impl.PropertyImpl jena)
+    (if (instance? PropertyImpl jena)
       (create-property model (str jena))
-      (if (instance? com.hp.hpl.jena.rdf.model.Literal jena)
+      (if (instance? Literal jena)
         (if (or (nil? (.getDatatypeURI jena))
                 (= (.getDatatypeURI jena)
                    "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"))
@@ -491,12 +500,12 @@
 ;; Initialization
 
 (defmethod build-model [:jena]
-  [& options] (plaza.rdf.implementations.jena.JenaModel. (ModelFactory/createDefaultModel)))
+  [& options] (JenaModel. (ModelFactory/createDefaultModel)))
 
 (defn init-jena-framework
   "Setup all the root bindings to use Plaza with the Jena framework. This function must be called
    before start using Plaza"
   []
   (alter-root-model (build-model :jena))
-  (alter-root-sparql-framework (plaza.rdf.implementations.jena.JenaSparqlFramework.))
+  (alter-root-sparql-framework (JenaSparqlFramework.))
   (alter-root-model-builder-fn :jena))

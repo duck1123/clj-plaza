@@ -136,7 +136,7 @@
   [expr]
   (or (and (keyword? expr)
            (.startsWith (keyword-to-string expr) "?"))
-      (= (class expr) com.hp.hpl.jena.sparql.expr.ExprVar)))
+      (= (class expr) ExprVar)))
 
 (defn- parse-pattern-literal
   "Parses a literal value"
@@ -270,7 +270,7 @@
 (defn parse-sparql-to-query-fn
   "Parses a SPARQL query and builds a whole query dictionary"
   [sparql-string]
-  (let [query (com.hp.hpl.jena.query.QueryFactory/create sparql-string)
+  (let [query (QueryFactory/create sparql-string)
         pattern-filters (sparql-to-pattern-filters query)]
     {:vars (mapv keyword (.getResultVars query))
      :filters (filter (comp :filter meta)     pattern-filters)
@@ -365,7 +365,7 @@
                                         :optional (conj optional optg)})
                               ;; Is not an optional triple
                               (do (.addTriplePattern building
-                                                     (com.hp.hpl.jena.graph.Triple/create
+                                                     (Triple/create
                                                       (build-query-atom (nth item 0))
                                                       (build-query-atom (nth item 1))
                                                       (build-query-atom (nth item 2))))
@@ -378,7 +378,7 @@
                         (when-not (.isEmpty (:optional built-patterns))
                           (doseq [optg (:optional built-patterns)]
                             (.addElement (:building built-patterns)
-                                         (com.hp.hpl.jena.sparql.syntax.ElementOptional. optg))))
+                                         (ElementOptional. optg))))
                         (:building built-patterns))
         built-filters (loop [bfs (map (fn [f] (build-filter builder f))
                                       (if (nil? (:filters query)) [] (:filters query)))]

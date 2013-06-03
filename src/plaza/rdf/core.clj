@@ -5,7 +5,9 @@
 
 (ns plaza.rdf.core
   (:use plaza.utils)
-  (:require [clojure.tools.logging :as log]))
+  (:require [clojure.tools.logging :as log])
+  (:import java.util.Calendar
+           java.util.Date))
 
 ;; Axiomatic vocabulary
 
@@ -251,17 +253,17 @@
 (defn rdf-date
   "Creates a new RDF date"
   ([]
-     (rdf-date (java.util.Date.)))
+     (rdf-date (Date.)))
   ([d]
-     (if (instance? java.util.Date d)
+     (if (instance? Date d)
        (rdf-date (+ 1900 (.getYear d))
                  (.getMonth d)
                  (.getDate d))
-       (if (instance? java.util.Calendar d)
+       (if (instance? Calendar d)
          (rdf-typed-literal d)
          (throw (Exception. (str "Don't know how to build a date from " d))))))
   ([y m d]
-     (let [c (java.util.Calendar/getInstance)]
+     (let [c (Calendar/getInstance)]
        (do (.set c y m d)
            (rdf-typed-literal c)))))
 
@@ -579,4 +581,3 @@
               t-o)
             t))
         triples)))
-
