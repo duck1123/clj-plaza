@@ -18,7 +18,10 @@
 </rdf:RDF>")
 
 (def ^:dynamic *test-xml-blanks* "<?xml version=\"1.0\"?>
-<rdf:RDF xmlns:csf=\"http://schemas.microsoft.com/connectedservices/pm#\" xmlns:owl=\"http://www.w3.org/2002/07/owl#\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" xmlns:rdfs=\"http://www.w3.org/2000/01/rdf-schema#\">
+<rdf:RDF xmlns:csf=\"http://schemas.microsoft.com/connectedservices/pm#\"
+         xmlns:owl=\"http://www.w3.org/2002/07/owl#\"
+         xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"
+         xmlns:rdfs=\"http://www.w3.org/2000/01/rdf-schema#\">
     <rdf:Description rdf:about=\"urn:upn_abc\">
         <csf:Phone>
             <rdf:Description>
@@ -33,38 +36,34 @@
 ;; we'll test with jena
 (init-jena-framework)
 
-(deftest test-create-model-jena
-  (is-model (build-model :jena)))
+(fact "create-model-jena"
+  (build-model :jena) => is-model)
 
 
-(deftest test-with-rdf-ns
+(fact "with-rdf-ns"
   (let [before *rdf-ns*
-        new-ns "hello"
-        result (with-rdf-ns new-ns
-                 *rdf-ns*)]
-    (is (= new-ns result))
-    (is (= before *rdf-ns*))))
+        new-ns "hello"]
+    (with-rdf-ns new-ns *rdf-ns*) => new-ns
+    *rdf-ns* => before))
 
-(deftest test-with-model
+(fact "with-model"
   (let [before-ns *rdf-ns*
         before-model *rdf-model*
         new-ns "hello"
-        new-model "bye"
-        result (with-rdf-ns new-ns
-                 (with-model new-model
-                   [*rdf-ns* *rdf-model*]))]
-    (is (= [new-ns new-model] result))
-    (is (= before-ns *rdf-ns*))
-    (is (= before-model *rdf-model*))))
+        new-model "bye"]
 
-(deftest test-make-property
-  (let [m (build-model :jena)
-        p1 (with-model m
-             (rdf-property rdf :hola))
-        p2 (with-model m
-             (rdf-property rdf:type))]
-    (is (= (to-string p1) "http://www.w3.org/1999/02/22-rdf-syntax-ns#hola"))
-    (is (= (to-string p2) "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))))
+    (with-rdf-ns new-ns
+      (with-model new-model
+        *rdf-ns* => new-ns
+        *rdf-model* => new-model))
+
+    *rdf-ns* => before-ns
+    *rdf-model* => before-model))
+
+(fact "make-property"
+  (with-model  (build-model :jena)
+    (to-string (rdf-property rdf :hola)) => "http://www.w3.org/1999/02/22-rdf-syntax-ns#hola"
+    (to-string (rdf-property rdf:type)) => "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
 
 (deftest test-make-resource
   (let [m (build-model :jena)
@@ -179,13 +178,13 @@
         (= 1 (count (model-to-triples m))))))
 
 (deftest test-optional
-  (let [is-optional (optional [:foo])]
-    (is (:optional (meta (first is-optional))))))
+  (let [optional? (optional [:foo])]
+    (is (:optional (meta (first optional?))))))
 
 (deftest test-optional-2
-  (let [is-optional (optional [:foo :bar])
-        is-opt (opt [:foo :bar])]
-    (is (= is-optional is-opt))))
+  (let [optional? (optional [:foo :bar])
+        opt? (opt [:foo :bar])]
+    (is (= optional? opt?))))
 
 (deftest test-document-to-model-1
   (let [m (build-model :jena)

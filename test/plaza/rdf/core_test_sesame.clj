@@ -178,13 +178,13 @@
         (= 1 (count (model-to-triples m))))))
 
 (deftest test-optional-sesame
-  (let [is-optional (optional [:foo])]
-    (is (:optional (meta (first is-optional))))))
+  (let [optional? (optional [:foo])]
+    (is (:optional (meta (first optional?))))))
 
 (deftest test-optional-2-sesame
-  (let [is-optional (optional [:foo :bar])
-        is-opt (opt [:foo :bar])]
-    (is (= is-optional is-opt))))
+  (let [optional? (optional [:foo :bar])
+        opt? (opt [:foo :bar])]
+    (is (= optional? opt?))))
 
 (deftest test-document-to-model-1-sesame
   (let [m (build-model :sesame)

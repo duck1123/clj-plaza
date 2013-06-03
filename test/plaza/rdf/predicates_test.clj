@@ -1,9 +1,10 @@
 (ns plaza.rdf.predicates-test
   (:use clojure.test
+        midje.sweet
         [plaza.rdf.core :only [l make-triples
                                d triple-subject
                                rdf:Property
-                               rdfs:Class b]]
+                               rdfs:Class b is-resource]]
         plaza.rdf.implementations.jena
         plaza.rdf.predicates)
   (:require [plaza.rdf.core :as rdf]))
@@ -43,29 +44,33 @@
     (is (= 0 (count result)))))
 
 (deftest test-filters-3
-  (let [tps (make-triples [[:a :b (d 2)] [:d :e (l "hola")] [:g [:h :i :j :k]]])
+  (let [tps (make-triples [[:a :b (d 2)]
+                           [:d :e (l "hola")]
+                           [:g [:h :i :j :k]]])
         result (filter (triple-check (not? (object-and? (is-literal?))))
                        tps)]
     (is (= 2 (count result)))))
 
 (deftest test-filters-4
-  (let [tps (make-triples [[:a :b (d 2)] [:d :e (l "hola")] [:g [:h :i :j :k]]])
-        result (filter (triple-check (not? (object? (is-literal?))))
-                       tps)]
+  (let [tps (make-triples [[:a :b (d 2)]
+                           [:d :e (l "hola")]
+                           [:g [:h :i :j :k]]])
+        result (filter (triple-check (not? (object? (is-literal?)))) tps)]
     (is (= 2 (count result)))))
 
 (deftest test-filters-5
-  (let [tps (make-triples [[:a :b (d 2)] [:d :e (l "hola")] [:g [:h :i :j :k]]])
-        result (filter (triple-check (object? (is-resource?)))
-                       tps)]
+  (let [tps (make-triples [[:a :b (d 2)]
+                           [:d :e (l "hola")]
+                           [:g [:h :i :j :k]]])
+        result (filter (triple-check (object? (is-resource?))) tps)]
     (is (= 2 (count result)))))
 
 (deftest test-filters-6
-  (let [tps (make-triples [[:a :b (d 2)] [:d :e (l "hola")] [:g [:h :i :j :k]]])
-        result-1 (filter (triple-check (object? (literal? "hola")))
-                         tps)
-        result-2 (filter (triple-check (object? (literal? "adios")))
-                         tps)]
+  (let [tps (make-triples [[:a :b (d 2)]
+                           [:d :e (l "hola")]
+                           [:g [:h :i :j :k]]])
+        result-1 (filter (triple-check (object? (literal? "hola"))) tps)
+        result-2 (filter (triple-check (object? (literal? "adios"))) tps)]
     (is (= 1 (count result-1)))
     (is (= 0 (count result-2)))))
 

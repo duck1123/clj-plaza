@@ -11,19 +11,19 @@
 
 
 (deftest test-build-model-1
-  (is (instance? plaza.rdf.implementations.sesame.SesameModel (build-model :sesame))))
+  (is (instance? SesameModel (build-model :sesame))))
 
 (deftest test-build-model-2
-  (is (instance? plaza.rdf.implementations.sesame.SesameModel (build-model))))
+  (is (instance? SesameModel (build-model))))
 
 (deftest test-build-model-3
-  (is (instance? plaza.rdf.implementations.sesame.SesameModel (build-model :non-existent))))
+  (is (instance? SesameModel (build-model :non-existent))))
 
 (deftest test-create-property-1
-  (is (instance? plaza.rdf.implementations.sesame.SesameProperty (create-property *rdf-model* "http://test.com"))))
+  (is (instance? SesameProperty (create-property *rdf-model* "http://test.com"))))
 
 (deftest test-create-property-2
-  (is (instance? plaza.rdf.implementations.sesame.SesameProperty (create-property *rdf-model* :rdf "test"))))
+  (is (instance? SesameProperty (create-property *rdf-model* :rdf "test"))))
 
 (deftest test-property-ns
   (is (= "http://test.com/" (qname-prefix (create-property (build-model) "http://test.com/test"))))
@@ -33,13 +33,14 @@
   (is (= "test" (qname-local (create-property (build-model) "http://test.com/test")))))
 
 (deftest test-resource-id
-  (is (= "http://test.com/test" (qname-local (create-property (build-model) "http://test.com/test")))))
+  (is (= "http://test.com/test"
+         (qname-local (create-property (build-model) "http://test.com/test")))))
 
 (deftest test-create-resource-1
-  (is (instance? plaza.rdf.implementations.sesame.SesameResource (create-resource *rdf-model* "http://test.com"))))
+  (is (instance? SesameResource (create-resource *rdf-model* "http://test.com"))))
 
 (deftest test-create-resource-2
-  (is (instance? plaza.rdf.implementations.sesame.SesameResource (create-resource *rdf-model* :rdf "test"))))
+  (is (instance? SesameResource (create-resource *rdf-model* :rdf "test"))))
 
 (deftest test-resource-ns
   (is (= "http://test.com/" (qname-prefix (create-resource (build-model) "http://test.com/test"))))
@@ -49,7 +50,8 @@
   (is (= "test" (qname-local (create-resource (build-model) "http://test.com/test")))))
 
 (deftest test-resource-id
-  (is (= "http://test.com/test" (resource-id (create-resource (build-model) "http://test.com/test")))))
+  (is (= "http://test.com/test"
+         (resource-id (create-resource (build-model) "http://test.com/test")))))
 
 (deftest test-blank-node-id
   (let [bnode (create-blank-node (build-model))]
@@ -63,9 +65,9 @@
   (let [model (build-model :sesame)
         res (create-blank-node model "a")]
     (is (= "_:a" (to-string res)))
-    (is (is-blank res))
-    (is (not (is-resource res)))
-    (is (not (is-property res)))
+    (is (blank? res))
+    (is (not (resource? res)))
+    (is (not (property? res)))
     (is (= "a" (resource-id res)))
     (is (= "_" (qname-prefix res)))
     (is (= "a" (qname-local res)))))
@@ -85,10 +87,10 @@
   (let [model (build-model :sesame)
         res (create-typed-literal model 2)]
     (is (= "\"2\"^^<http://www.w3.org/2001/XMLSchema#int>" (to-string res)))
-    (is (not (is-blank res)))
-    (is (not (is-resource res)))
-    (is (not (is-property res)))
-    (is (is-literal res))
+    (is (not (blank? res)))
+    (is (not (resource? res)))
+    (is (not (property? res)))
+    (is (literal? res))
     (is (= (resource-id res) "\"2\"^^<http://www.w3.org/2001/XMLSchema#int>"))
     (is (= (literal-value res) 2))
     (is (= (literal-language res) ""))
