@@ -114,11 +114,7 @@
 ;; JENA implementation
 
 (deftype JenaResource [res]
-  RDFResource RDFNode JavaObjectWrapper RDFPrintable
-  (to-java [resource]
-    res)
-  (to-string [resource]
-    (.getURI res))
+  RDFNode
   (is-blank [resource]
     false)
   (is-resource [resource]
@@ -127,6 +123,8 @@
     false)
   (is-literal [resource]
     false)
+
+  RDFResource
   (resource-id [resource]
     (.getURI res))
   (qname-prefix [resource]
@@ -143,6 +141,16 @@
     (throw (Exception. "Cannot retrieve datatype-uri for a resource")))
   (literal-lexical-form [resource]
     (resource-id resource))
+
+  JavaObjectWrapper
+  (to-java [resource]
+    res)
+
+  RDFPrintable
+  (to-string [resource]
+    (.getURI res))
+
+  Object
   (toString [resource]
     (.getURI res))
   (hashCode [resource]
