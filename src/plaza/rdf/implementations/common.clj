@@ -118,13 +118,13 @@
   [sym data]
   (.parse (find-jena-datatype sym) data))
 
-(defn is-filter-expr
+(defn filter-expr?
   "Tests if one Jena expression is a filter expression"
   [expr]
   (or (instance? ExprFunction expr)
       (instance? ElementFilter expr)))
 
-(defn is-var-expr-fn
+(defn var-expr-fn?
   "Tests if one Jena expression is a var expression"
   [expr]
   (or (and (keyword? expr)
@@ -174,8 +174,8 @@
 (defn- parse-next-filter-expr
   [expr]
   (cond
-   (is-var-expr-fn expr) (keyword (str expr))
-   (is-filter-expr expr) (parse-filter-expr expr)
+   (var-expr-fn? expr) (keyword (str expr))
+   (filter-expr? expr) (parse-filter-expr expr)
    true (parse-literal-lexical (str expr))))
 
 (defn- parse-filter-expr-2
@@ -312,7 +312,7 @@
   (cond
    (keyword? arg) (ExprVar. (.replace (keyword->string arg) "?" ""))
    (map? arg) (build-filter builder arg)
-   (is-resource arg) (NodeValue/makeNode (Node/createURI (resource-id arg)))
+   (resource? arg) (NodeValue/makeNode (Node/createURI (resource-id arg)))
    :default (NodeValue/makeNode
              (literal-lexical-form arg)
              (literal-language arg)
@@ -332,11 +332,11 @@
   [atom]
   (if (keyword? atom)
     (Var/alloc (keyword->variable atom))
-    (if (is-literal atom)
+    (if (literal? atom)
       (if (= (find-jena-datatype (literal-datatype-uri atom)) (find-jena-datatype :xmlliteral))
         (Node/createLiteral (literal-lexical-form atom) (literal-language atom) false)
         (Node/createLiteral (literal-lexical-form atom) (literal-language atom) (find-jena-datatype (literal-datatype-uri atom))))
-      (if (is-blank atom) (Node/createAnon (AnonId. (resource-id atom)))
+      (if (blank? atom) (Node/createAnon (AnonId. (resource-id atom)))
           (Node/createURI (if (is-resource atom) (to-string atom)
                               (str atom)))))))
 

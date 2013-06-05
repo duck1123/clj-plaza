@@ -31,7 +31,7 @@
   (parse-sparql->pattern [framework sparql] "Parses a SPARQL query and builds a pattern")
   (build-filter [framework filter] "Transforms a filter representation into a filter Java object")
   (build-query [framework query] "Transforms a query reprsentation into a query Java object")
-  (is-var-expr [framework expr] "Checks wether an object is a valid var expression for this framework")
+  (var-expr? [framework expr] "Checks wether an object is a valid var expression for this framework")
   (var->keyword [framework var-expr] "Transforms an object var into a keyword"))
 
 ;; common variable names
@@ -244,7 +244,7 @@
 (defn- collect-var
   "Auxiliary function for pattern-collect-vars"
   [rs atom]
-  (if (is-var-expr *sparql-framework* atom)
+  (if (var-expr? *sparql-framework* atom)
     (let [katom (var->keyword-fn atom)]
       (if (some #(= katom %1) rs)
         rs
@@ -417,21 +417,21 @@ with results binding variables in que query pattern"
 (defn- subject-vars
   [pattern]
   (reduce (fn [ac [s p o]]
-            (if (is-var-expr *sparql-framework* s)
+            (if (var-expr? *sparql-framework* s)
               (conj ac s) ac))
           [] pattern))
 
 (defn- predicate-vars
   [pattern]
   (reduce (fn [ac [s p o]]
-            (if (is-var-expr *sparql-framework* p)
+            (if (var-expr? *sparql-framework* p)
               (conj ac p) ac))
           [] pattern))
 
 (defn- object-vars
   [pattern]
   (reduce (fn [ac [s p o]]
-            (if (is-var-expr *sparql-framework* o)
+            (if (var-expr? *sparql-framework* o)
               (conj ac o) ac))
           [] pattern))
 

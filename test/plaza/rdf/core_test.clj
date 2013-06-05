@@ -38,7 +38,7 @@
 (init-jena-framework)
 
 (fact "create-model-jena"
-  (build-model :jena) => is-model)
+  (build-model :jena) => model?)
 
 
 (fact "with-rdf-ns"

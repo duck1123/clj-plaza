@@ -13,10 +13,10 @@
         res (create-resource model "http://test.com/test")
         https-res (create-property model "https://test.com/test")]
 
-    res                =not=> is-blank
-    res                =not=> is-property
+    res                =not=> blank?
+    res                =not=> property?
     (to-string res)        => "http://test.com/test"
-    res                    => is-resource
+    res                    => resource?
     (resource-id res)      => "http://test.com/test"
     (qname-prefix res)     => "http://test.com/"
     (qname-local res)      => "test"
@@ -39,9 +39,9 @@
   (let [model (build-model :jena)
         res (create-blank-node model "a")]
     (to-string res)        => "_:a"
-    res                    => is-blank
-    res                =not=> is-resource
-    res                =not=> is-property
+    res                    => blank?
+    res                =not=> resource?
+    res                =not=> property?
     (resource-id res)      => "a"
     (qname-prefix res)     => "_"
     (qname-local res)      => "a"))
@@ -50,10 +50,10 @@
   (let [model (build-model :jena)
         res (create-literal model "a" "es")]
     (is (= "a@es" (to-string res)))
-    (is (not (is-blank res)))
-    (is (not (is-resource res)))
-    (is (not (is-property res)))
-    (is (is-literal res))
+    (is (not (blank? res)))
+    (is (not (resource? res)))
+    (is (not (property? res)))
+    (is (literal? res))
     (is (= (resource-id res) "a@es"))
     (is (= (literal-value res) "a"))
     (is (= (literal-language res) "es"))
@@ -63,10 +63,10 @@
   (let [model (build-model :jena)
         res (create-typed-literal model (Integer. 2))]
     (is (= "\"2\"^^<http://www.w3.org/2001/XMLSchema#int>" (to-string res)))
-    (is (not (is-blank res)))
-    (is (not (is-resource res)))
-    (is (not (is-property res)))
-    (is (is-literal res))
+    (is (not (blank? res)))
+    (is (not (resource? res)))
+    (is (not (property? res)))
+    (is (literal? res))
     (is (= (resource-id res) "\"2\"^^<http://www.w3.org/2001/XMLSchema#int>"))
     (is (= (literal-value res) 2))
     (is (= (literal-language res) ""))

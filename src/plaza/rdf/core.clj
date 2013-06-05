@@ -27,10 +27,14 @@
 
 (defprotocol RDFNode
   "Common queries for objects that can be inserted in a RDF graph"
-  (is-blank [resource] "Returns true if this resource is a blank node")
-  (is-resource [resource] "Returns true if this resource is not a literal or datatype literal")
-  (is-property [resource] "Returns true if this resource is a RDF property")
-  (is-literal [resource] "Returns true if this resource is a RDF literal"))
+  (blank? [resource]
+    "Returns true if this resource is a blank node")
+  (resource? [resource]
+    "Returns true if this resource is not a literal or datatype literal")
+  (property? [resource]
+    "Returns true if this resource is a RDF property")
+  (literal? [resource]
+    "Returns true if this resource is a RDF literal"))
 
 (defprotocol RDFResource
   "Any object that can be inserted in a RDF graph"
@@ -206,13 +210,13 @@
   ([ns local] (create-resource *rdf-model* (expand-ns ns local)))
   ([uri] (create-resource *rdf-model* uri)))
 
-(defn is-blank-node
+(defn blank-node?
   "Checks if a RDF resource"
   [resource]
   (if (or (string? resource)
           (keyword? resource))
     false
-    (is-blank resource)))
+    (blank? resource)))
 
 (defn blank-node
   ([]
@@ -276,12 +280,12 @@
   "Defines a subject for a statement"
   [subject]
   (if (and (instance? plaza.rdf.core.RDFResource subject)
-           (is-resource subject))
+           (resource? subject))
     subject
     (if (coll? subject)
       (let [[rdf-ns local] subject]
         (rdf-resource rdf-ns local))
-      (if (is-blank-node subject)
+      (if (blank-node? subject)
         subject
         (if (.startsWith (keyword->string subject) "?")
           (keyword subject)
@@ -291,14 +295,14 @@
   "Defines the predicate of a statement"
   [predicate]
   (if (and (instance? plaza.rdf.core.RDFResource predicate)
-           (is-resource predicate))
+           (resource? predicate))
     predicate
     (if (instance? plaza.rdf.core.RDFResource predicate)
       (rdf-property predicate)
       (if (coll? predicate)
         (let [[rdf-ns local] predicate]
           (rdf-property rdf-ns local))
-        (if (is-blank-node predicate)
+        (if (blank-node? predicate)
           (throw (Exception. "Blank node cannot be predicate in a model"))
           (if (.startsWith (keyword->string predicate) "?")
             (keyword predicate)
@@ -308,7 +312,7 @@
   "Defines the object of a statement"
   [literal]
   (if (and (instance? plaza.rdf.core.RDFResource literal)
-           (is-literal literal))
+           (literal? literal))
     literal
     (triple-subject literal)))
 
@@ -355,11 +359,11 @@
   "Clones a triple component"
   [rdf-obj]
   (cond
-   (keyword? rdf-obj) rdf-obj        ;variable
-   (is-blank-node rdf-obj) (rdf-clone-blank-node rdf-obj)
-   (is-literal rdf-obj) (rdf-clone-literal rdf-obj)   ;literal
-   (is-property rdf-obj) (rdf-clone-property rdf-obj) ;property
-   (is-resource rdf-obj) (rdf-clone-resource rdf-obj) ;resource
+   (keyword? rdf-obj)    rdf-obj                        ;; variable
+   (blank-node? rdf-obj) (rdf-clone-blank-node rdf-obj)
+   (literal? rdf-obj)    (rdf-clone-literal rdf-obj)    ;; literal
+   (property? rdf-obj)   (rdf-clone-property rdf-obj)   ;; property
+   (resource? rdf-obj)   (rdf-clone-resource rdf-obj)   ;; resource
    ))
 
 (defn resource-uri

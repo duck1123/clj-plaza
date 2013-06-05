@@ -3,12 +3,13 @@
 ;; @date 04.05.2010
 
 (ns plaza.rdf.predicates
-  (:use [plaza.rdf.core :only [*rdf-model* expand-ns find-datatype find-ns-registry
-                               is-blank is-literal is-resource literal-datatype-uri
-                               literal-language literal-lexical-form literal-value
-                               qname-local qname-prefix resource-id]]
-        [plaza.rdf.sparql :only [*sparql-framework* is-var-expr]]
-        [plaza.utils :only [keyword->string]])
+  (:use [plaza.rdf.core :only [*rdf-model* blank? expand-ns find-datatype
+                               find-ns-registry literal-datatype-uri
+                               literal-language literal-lexical-form
+                               literal-value qname-local qname-prefix
+                               resource-id]]
+        [plaza.rdf.sparql :only [*sparql-framework* var-expr?]]
+        [plaza.utils :only [keyword-to-string]])
   (:require [plaza.rdf.core :as rdf]))
 
 ;; model value extraction
@@ -55,7 +56,7 @@
   ([uri]
      (fn [triple atom]
        (cond (or (instance? clojure.lang.Keyword atom)
-                 (is-literal atom))
+                 (rdf/literal? atom))
              false
              true
              (= (resource-id atom) uri)))))
@@ -64,8 +65,8 @@
   "Matches a URI or curie against a triple atom"
   [prefix]
   (fn [triple atom]
-    (cond (or (instance? clojure.lang.Keyword)
-              (is-literal atom))
+    (cond (or (instance? clojure.lang.Keyword atom)
+              (rdf/literal? atom))
           false
           true
           (= (qname-prefix atom)
@@ -78,7 +79,7 @@
   [local]
   (fn [triple atom]
     (and (not (or (keyword? atom)
-                  (is-literal atom)))
+                  (rdf/literal? atom)))
          (= (qname-local atom)
             (keyword->string local)))))
 
@@ -86,16 +87,16 @@
   "Matches a literal with a certain literal value"
   [lit]
   (fn [triple atom]
-    (cond (is-literal atom)
+    (cond (rdf/literal? atom)
           (= (literal-lexical-form atom) (str lit))
           true false)))
 
-(defn is-literal?
+(defn matches-literal?
   "Matches a literal with a certain literal value"
   []
   (fn [triple atom]
     (cond (and (instance? plaza.rdf.core.RDFResource atom)
-               (is-literal atom))
+               (rdf/literal? atom))
           true
           true false)))
 
@@ -109,23 +110,23 @@
   ([val]
      (fn [triple atom]
        (if (and (instance? plaza.rdf.core.RDFResource atom)
-                (is-literal atom))
+                (rdf/literal? atom))
          (= (literal-value atom) val)
          false)))
   ([val lang]
      (fn [triple atom]
        (if (and (instance? plaza.rdf.core.RDFResource atom)
-                (is-literal atom))
+                (rdf/literal? atom))
          (and (= (literal-value atom) val)
               (= (literal-language atom) lang))
          false))))
 
-(defn datatype?
+(defn has-datatype?
   "Matches the value or the value and language of a literal"
   [data-uri]
   (fn [triple atom]
     (if (and (instance? plaza.rdf.core.RDFResource atom)
-             (is-literal atom))
+             (rdf/literal? atom))
       (= (find-datatype *rdf-model* (literal-datatype-uri atom))
          (find-datatype *rdf-model* data-uri))
       false)))
@@ -134,37 +135,34 @@
   "Matches a variable"
   []
   (fn [triple atom]
-    (is-var-expr *sparql-framework* atom)))
+    (var-expr? *sparql-framework* atom)))
 
 (defn is-blank-node?
   "Matches a blank node"
-  []
-  (fn [triple atom]
-    (if (or (string? atom)
-            (keyword? atom))
-      false
-      (is-blank atom))))
-
-(defn blank-node?
-  "Matches a blank node with a certain id"
-  [id]
-  (fn [triple atom]
-    (if (or (string? atom)
-            (keyword? atom))
-      false
-      (if  (and (instance? plaza.rdf.core.RDFResource atom)
-                (is-blank atom))
-        (= (keyword->string id) (str (resource-id atom)))
-        false))))
+  ([]
+     (fn [triple atom]
+       (if (or (string? atom)
+               (keyword? atom))
+         false
+         (blank? atom))))
+  ([id]
+     (fn [triple atom]
+       (if (or (string? atom)
+               (keyword? atom))
+         false
+         (if  (and (instance? plaza.rdf.core.RDFResource atom)
+                   (blank? atom))
+           (= (name id) (str (resource-id atom)))
+           false)))))
 
 (defn is-resource?
   "Matches a literal with a certain literal value"
   []
   (fn [triple atom]
     (and (instance? plaza.rdf.core.RDFResource atom)
-         (is-resource atom))))
+         (rdf/resource? atom))))
 
-(defn is-optional?
+(defn optional?
   "Checks if a triple is an optional part of a query"
   []
   (fn [triple atom]

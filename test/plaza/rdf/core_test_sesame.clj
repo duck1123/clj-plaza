@@ -196,10 +196,10 @@
   (let [m (build-model :sesame)
         _m (with-model m (document->model (java.io.ByteArrayInputStream. (.getBytes *test-xml-blanks*)) :xml))]
     (is (= (count (model->triples m)) 4))
-    (is (or (is-blank-node (o (first (model->triples m))))
-            (is-blank-node (o (second (model->triples m))))
-            (is-blank-node (o (nth (model->triples m) 2)))
-            (is-blank-node (o (nth (model->triples m) 3)))))))
+    (is (or (blank-node? (o (first (model->triples m))))
+            (blank-node? (o (second (model->triples m))))
+            (blank-node? (o (nth (model->triples m) 2)))
+            (blank-node? (o (nth (model->triples m) 3)))))))
 
 (deftest test-find-resources-sesame
   (let [m (build-model :sesame)
@@ -218,18 +218,18 @@
         b2 (b)
         b3 (blank-node :a)
         b4 (b :a)]
-    (is (is-blank-node b1))
-    (is (is-blank-node b2))
-    (is (is-blank-node b3))
-    (is (is-blank-node b4))
+    (is (blank-node? b1))
+    (is (blank-node? b2))
+    (is (blank-node? b3))
+    (is (blank-node? b4))
     (is (= :a (keyword (blank-node-id b3))))
     (is (= :a (keyword (blank-node-id b4))))))
 
 (deftest test-blank-node-is-sesame
-  (is (not (is-blank-node :?a)))
-  (is (not (is-blank-node (d 2))))
-  (is (not (is-blank-node (l "test"))))
-  (is (not (is-blank-node (rdf-resource "http://test.com/Test")))))
+  (is (not (blank-node? :?a)))
+  (is (not (blank-node? (d 2))))
+  (is (not (blank-node? (l "test"))))
+  (is (not (blank-node? (rdf-resource "http://test.com/Test")))))
 
 (deftest test-has-meta-sesame
   (is (:triples (meta (make-triples [[:a :b :c]])))))

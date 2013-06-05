@@ -4,7 +4,7 @@
         [plaza.rdf.core :only [l make-triples
                                d triple-subject
                                rdf:Property
-                               rdfs:Class b is-resource]]
+                               rdfs:Class b]]
         plaza.rdf.implementations.jena
         plaza.rdf.predicates)
   (:require [plaza.rdf.core :as rdf]))
@@ -89,7 +89,7 @@
 
 (deftest test-filters-9
   (let [tps (make-triples [[(b :a) :p (b) ] [:d :e (l "hola" "es")]])
-        result-1 (filter (triple-check (subject? (blank-node? :a)))
+        result-1 (filter (triple-check (subject? (is-blank-node? :a)))
                          tps)
         result-2 (filter (triple-check (object? (is-blank-node?)))
                          tps)]
@@ -98,7 +98,7 @@
 
 (deftest test-tc-1
   (let [tps (make-triples [[(b :a) :p (b) ] [:d :e (l "hola" "es")]])
-        result-1 (filter (tc (subject? (blank-node? :a)))
+        result-1 (filter (tc (subject? (is-blank-node? :a)))
                          tps)
         result-2 (filter (tc (object? (is-blank-node?)))
                          tps)]

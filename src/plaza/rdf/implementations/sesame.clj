@@ -123,13 +123,13 @@
     res)
   (to-string [resource]
     (str res))
-  (is-blank [resource]
+  (blank? [resource]
     false)
-  (is-resource [resource]
+  (resource? [resource]
     true)
-  (is-property [resource]
+  (property? [resource]
     false)
-  (is-literal [resource]
+  (literal? [resource]
     false)
   (resource-id [resource]
     (to-string resource))
@@ -161,13 +161,13 @@
     res)
   (to-string [resource]
     (str "_:" (resource-id resource)))
-  (is-blank [resource]
+  (blank? [resource]
     true)
-  (is-resource [resource]
+  (resource? [resource]
     false)
-  (is-property [resource]
+  (property? [resource]
     false)
-  (is-literal [resource]
+  (literal? [resource]
     false)
   (resource-id [resource]
     (.getID res))
@@ -201,13 +201,13 @@
       (if (= "" lang)
         (literal-lexical-form resource)
         (str  (literal-lexical-form resource) "@" lang))))
-  (is-blank [resource]
+  (blank? [resource]
     false)
-  (is-resource [resource]
+  (resource? [resource]
     false)
-  (is-property [resource]
+  (property? [resource]
     false)
-  (is-literal [resource]
+  (literal? [resource]
     true)
   (resource-id [resource]
     (if (= (.getLanguage res) "")
@@ -242,13 +242,13 @@
     res)
   (to-string [resource]
     (str res))
-  (is-blank [resource]
+  (blank? [resource]
     false)
-  (is-resource [resource]
+  (resource? [resource]
     false)
-  (is-property [resource]
+  (property? [resource]
     false)
-  (is-literal [resource]
+  (literal? [resource]
     true)
   (resource-id [resource]
     (to-string resource))
@@ -281,13 +281,13 @@
     res)
   (to-string [resource]
     (str res))
-  (is-blank [resource]
+  (blank? [resource]
     false)
-  (is-resource [resource]
+  (resource? [resource]
     true)
-  (is-property [resource]
+  (property? [resource]
     true)
-  (is-literal [resource]
+  (literal? [resource]
     false)
   (resource-id [resource]
     (to-string resource))
@@ -490,8 +490,8 @@
     (build-filter-fn framework filter))
   (build-query [framework query]
     (build-query-fn framework query))
-  (is-var-expr [framework expr]
-    (is-var-expr-fn expr))
+  (var-expr? [framework expr]
+    (var-expr-fn? expr))
   (var->keyword [framework var-expr]
     (let [s (.getVarName var-expr)]
       (if (.startsWith s "?")

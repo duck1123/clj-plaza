@@ -111,13 +111,13 @@
 
 (deftype JenaResource [res]
   RDFNode
-  (is-blank [resource]
+  (blank? [resource]
     false)
-  (is-resource [resource]
+  (resource? [resource]
     true)
-  (is-property [resource]
+  (property? [resource]
     false)
-  (is-literal [resource]
+  (literal? [resource]
     false)
 
   RDFResource
@@ -162,13 +162,13 @@
     res)
   (to-string [resource]
     (str "_:" (resource-id resource)))
-  (is-blank [resource]
+  (blank? [resource]
     true)
-  (is-resource [resource]
+  (resource? [resource]
     false)
-  (is-property [resource]
+  (property? [resource]
     false)
-  (is-literal [resource]
+  (literal? [resource]
     false)
   (resource-id [resource]
     (str (.getId res)))
@@ -203,13 +203,13 @@
       (if (= "" lang)
         (literal-lexical-form resource)
         (str  (literal-lexical-form resource) "@" lang))))
-  (is-blank [resource]
+  (blank? [resource]
     false)
-  (is-resource [resource]
+  (resource? [resource]
     false)
-  (is-property [resource]
+  (property? [resource]
     false)
-  (is-literal [resource]
+  (literal? [resource]
     true)
   (resource-id [resource]
     (to-string resource))
@@ -242,13 +242,13 @@
     res)
   (to-string [resource]
     (str  "\""(literal-lexical-form resource) "\"^^<" (literal-datatype-uri resource) ">"))
-  (is-blank [resource]
+  (blank? [resource]
     false)
-  (is-resource [resource]
+  (resource? [resource]
     false)
-  (is-property [resource]
+  (property? [resource]
     false)
-  (is-literal [resource]
+  (literal? [resource]
     true)
   (resource-id [resource]
     (to-string resource))
@@ -282,13 +282,13 @@
     res)
   (to-string [resource]
     (str res))
-  (is-blank [resource]
+  (blank? [resource]
     false)
-  (is-resource [resource]
+  (resource? [resource]
     true)
-  (is-property [resource]
+  (property? [resource]
     true)
-  (is-literal [resource]
+  (literal? [resource]
     false)
   (resource-id [resource]
     (to-string resource))
@@ -336,7 +336,7 @@
     (.createProperty mod (expand-ns ns local)))
   (create-property [model uri]
     (if (instance? RDFResource uri)
-      (if (is-property uri)
+      (if (property? uri)
         uri
         (JenaProperty.
          (.createProperty mod (str uri))))
