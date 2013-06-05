@@ -76,21 +76,21 @@
 
 (fact "filters-9"
   (let [tps (make-triples [[(b :a) :p (b) ] [:d :e (l "hola" "es")]])
-        result-1 (filter (triple-check (subject? (is-bnode? :a)))
+        result-1 (filter (triple-check (subject? (matches-bnode? :a)))
                          tps)
         result-2 (filter (triple-check (object? (is-bnode?)))
                          tps)]
     (count result-1) => 1
     (count result-2) => 1))
 
-;; (deftest test-tc-1
-;;   (let [tps (make-triples [[(b :a) :p (b) ] [:d :e (l "hola" "es")]])
-;;         result-1 (filter (tc (subject? (is-bnode? :a)))
-;;                          tps)
-;;         result-2 (filter (tc (object? (is-bnode?)))
-;;                          tps)]
-;;     (is (= 1 (count result-1)))
-;;     (is (= 1 (count result-2)))))
+(deftest test-tc-1
+  (let [tps (make-triples [[(b :a) :p (b) ] [:d :e (l "hola" "es")]])
+        result-1 (filter (tc (subject? (matches-bnode? :a)))
+                         tps)
+        result-2 (filter (tc (object? (is-bnode?)))
+                         tps)]
+    (is (= 1 (count result-1)))
+    (is (= 1 (count result-2)))))
 
 
 (deftest test-predicate-2
