@@ -14,19 +14,6 @@
 ;; we'll test with jena
 (init-jena-framework)
 
-;; rdf/xml used in the tests
-(def ^:dynamic *test-xml* "<rdf:RDF
-    xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"
-    xmlns:test=\"http://plaza.org/ontologies/\" >
-  <rdf:Description rdf:about=\"http://plaza.org/ontologies/a\">
-    <test:c rdf:datatype=\"http://www.w3.org/2001/XMLSchema#int\">3</test:c>
-    <test:b rdf:datatype=\"http://www.w3.org/2001/XMLSchema#int\">2</test:b>
-  </rdf:Description>
-  <rdf:Description rdf:about=\"http://plaza.org/ontologies/d\">
-    <test:e rdf:datatype=\"http://www.w3.org/2001/XMLSchema#int\">3</test:e>
-  </rdf:Description>
-</rdf:RDF>")
-
 (fact "framework-sparql->pattern-1"
   (let [framework (JenaSparqlFramework.)
         query "SELECT ?v WHERE { ?v ?p 2 . optional {?v ?q 3 . ?v ?q 4 } }"
