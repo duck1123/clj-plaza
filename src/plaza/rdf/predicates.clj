@@ -12,6 +12,99 @@
         [plaza.utils :only [keyword-to-string]])
   (:require [plaza.rdf.core :as rdf]))
 
+;; boolean checkers
+
+(defn and?
+  "Applies and to a series of matchers"
+  [& preds]
+  (fn [triple atom]
+    (reduce (fn [acum item] (and acum (item triple atom))) true preds)))
+
+(defn or?
+  "Applies or to a series of matchers"
+  [& preds]
+  (fn [triple atom]
+    (reduce (fn [acum item] (or acum (item triple atom))) false preds)))
+
+(defn not?
+  "Negates a clause query"
+  [pred]
+  (fn [triple atom]
+    (not (pred triple atom))))
+
+
+(defn triple-and?
+  "Checks if one triple matches a set of conditions"
+  [& conds]
+  (fn [triple] ((apply and? conds) triple triple)))
+
+(defn triple-or?
+  "Checks if one triple matches a set of conditions"
+  [& conds]
+  (fn [triple] ((apply or? conds) triple triple)))
+
+
+(defn subject-and?
+  "Checks a condition over the subject of a triple"
+  [& conditions]
+  (fn [triple atom]
+    ((apply and? conditions) triple (nth triple 0))))
+
+(defn subject-or?
+  "Checks a condition over the subject of a triple"
+  [& conditions]
+  (fn [triple atom]
+    ((apply or? conditions) triple (nth triple 0))))
+
+
+(defn predicate-and?
+  "Checks a condition over the predicate of a triple"
+  [& conditions]
+  (fn [triple atom]
+    ((apply and? conditions) triple (nth triple 1))))
+
+(defn predicate-or?
+  "Checks a condition over the predicate of a triple"
+  [& conditions]
+  (fn [triple atom]
+    ((apply or? conditions) triple (nth triple 1))))
+
+
+(defn object-and?
+  "Checks a condition over the object of a triple"
+  [& conditions]
+  (fn [triple atom]
+    ((apply and? conditions) triple (nth triple 2))))
+
+(defn object-or?
+  "Checks a condition over the object of a triple"
+  [& conditions]
+  (fn [triple atom]
+    ((apply or? conditions) triple (nth triple 2))))
+
+
+
+
+(defn predicate?
+  "Checks a condition over the predicate of a triple"
+  [condition]
+  (fn [triple atom]
+    ((predicate-and? condition) triple atom)))
+
+(defn subject?
+  "Checks a condition over the subject of a triple"
+  [condition]
+  (fn [triple atom]
+    ((subject-and? condition) triple atom)))
+
+(defn object?
+  "Checks a condition over the object of a triple"
+  [condition]
+  (fn [triple atom]
+    ((object-and? condition) triple atom)))
+
+
+
 ;; model value extraction
 
 (defn triple-check-apply
@@ -19,40 +112,34 @@
   [predicate val]
   (predicate val val))
 
-(defn tca
-  "Shortcut for triple-check-apply"
-  [& args]
-  (apply triple-check-apply args))
+(defn fn-apply?
+  "Applies a function to a value"
+  [f]
+  (fn [triple atom] (f atom)))
+
+(defn fn-triple-apply?
+  "Applies a function to a value"
+  [f]
+  (fn [triple atom] (f triple)))
 
 ;; model testing
-(declare triple-and?)
 
 (defn triple-check
   "Checks if one triple matches a set of conditions"
   [cond]
   (fn [triple] ((triple-and? cond) triple)))
 
-(defn tc
-  "Shortcut for triple-check"
-  [& args]
-  (apply triple-check args))
-
 (defn triple-transform
   "Accepts a single argument function that will receive a triple and transform it"
   [f]
   (fn [triple atom] (f triple)))
-
-(defn tt
-  "Shortcut for triple-transform"
-  [& args]
-  (apply triple-transform args))
 
 ;; predicates
 
 (defn matches-uri?
   "Matches a URI or curie against a triple atom"
   ([ns local]
-     (uri? (expand-ns ns local)))
+     (matches-uri? (expand-ns ns local)))
   ([uri]
      (fn [triple atom]
        (and (not (or (keyword? atom)
@@ -63,14 +150,10 @@
   "Matches a URI or curie against a triple atom"
   [prefix]
   (fn [triple atom]
-    (cond (or (instance? clojure.lang.Keyword atom)
-              (rdf/literal? atom))
-          false
-          true
-          (= (qname-prefix atom)
-             (if (nil? (find-ns-registry prefix))
-               (keyword->string prefix)
-               (find-ns-registry prefix))))))
+    (and (not (or (keyword? atom) (rdf/literal? atom)))
+         (= (qname-prefix atom)
+            (or (find-ns-registry prefix)
+                (keyword-to-string prefix))))))
 
 (defn matches-qname-local?
   "Matches a URI or curie against a triple atom"
@@ -142,13 +225,10 @@
          (blank? atom))))
   ([id]
      (fn [triple atom]
-       (if (or (string? atom)
-               (keyword? atom))
-         false
-         (if  (and (instance? plaza.rdf.core.RDFResource atom)
-                   (blank? atom))
-           (= (name id) (str (resource-id atom)))
-           false)))))
+       (and (not (or (string? atom) (keyword? atom)))
+            (instance? plaza.rdf.core.RDFResource atom)
+            (blank? atom)
+            (= (name id) (str (resource-id atom)))))))
 
 (defn is-resource?
   "Matches a literal with a certain literal value"
@@ -163,100 +243,28 @@
   (fn [triple atom]
     (= true (:optional (meta triple)))))
 
-(defn and?
-  "Applies and to a series of matchers"
-  [& preds]
-  (fn [triple atom]
-    (reduce (fn [acum item] (and acum (item triple atom))) true preds)))
-
-(defn or?
-  "Applies or to a series of matchers"
-  [& preds]
-  (fn [triple atom]
-    (reduce (fn [acum item] (or acum (item triple atom))) false preds)))
-
-(defn not?
-  "Negates a clause query"
-  [pred]
-  (fn [triple atom]
-    (not (pred triple atom))))
-
-(defn triple-and?
-  "Checks if one triple matches a set of conditions"
-  [& conds]
-  (fn [triple] ((apply and? conds) triple triple)))
-
-(defn subject-and?
-  "Checks a condition over the subject of a triple"
-  [& conditions]
-  (fn [triple atom]
-    ((apply and? conditions) triple (nth triple 0))))
-
-(defn subject?
-  "Checks a condition over the subject of a triple"
-  [condition]
-  (fn [triple atom]
-    ((subject-and? condition) triple atom)))
-
-(defn predicate-and?
-  "Checks a condition over the predicate of a triple"
-  [& conditions]
-  (fn [triple atom]
-    ((apply and? conditions) triple (nth triple 1))))
-
-(defn predicate?
-  "Checks a condition over the predicate of a triple"
-  [condition]
-  (fn [triple atom]
-    ((predicate-and? condition) triple atom)))
-
-(defn object-and?
-  "Checks a condition over the object of a triple"
-  [& conditions]
-  (fn [triple atom]
-    ((apply and? conditions) triple (nth triple 2))))
-
-(defn object?
-  "Checks a condition over the object of a triple"
-  [condition]
-  (fn [triple atom]
-    ((object-and? condition) triple atom)))
-
-(defn triple-or?
-  "Checks if one triple matches a set of conditions"
-  [& conds]
-  (fn [triple] ((apply or? conds) triple triple)))
-
-(defn subject-or?
-  "Checks a condition over the subject of a triple"
-  [& conditions]
-  (fn [triple atom]
-    ((apply or? conditions) triple (nth triple 0))))
-
-(defn predicate-or?
-  "Checks a condition over the predicate of a triple"
-  [& conditions]
-  (fn [triple atom]
-    ((apply or? conditions) triple (nth triple 1))))
-
-(defn object-or?
-  "Checks a condition over the object of a triple"
-  [& conditions]
-  (fn [triple atom]
-    ((apply or? conditions) triple (nth triple 2))))
-
 (defn regex?
   "Checks if a value matches a ceratin regular expression"
   [regex]
   (fn [triple atom]
     (not (empty? (re-find regex (str atom))))))
 
-(defn fn-apply?
-  "Applies a function to a value"
-  [f]
-  (fn [triple atom] (f atom)))
 
-(defn fn-triple-apply?
-  "Applies a function to a value"
-  [f]
-  (fn [triple atom] (f triple)))
+
+(defn tca
+  "Shortcut for triple-check-apply"
+  [& args]
+  (apply triple-check-apply args))
+
+(defn tc
+  "Shortcut for triple-check"
+  [& args]
+  (apply triple-check args))
+
+(defn tt
+  "Shortcut for triple-transform"
+  [& args]
+  (apply triple-transform args))
+
+
+
