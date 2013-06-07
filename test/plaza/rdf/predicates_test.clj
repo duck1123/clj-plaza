@@ -1,6 +1,5 @@
 (ns plaza.rdf.predicates-test
-  (:use clojure.test
-        midje.sweet
+  (:use midje.sweet
         [plaza.rdf.core :only [l make-triples
                                d triple-subject
                                rdf:Property
@@ -83,21 +82,20 @@
     (count result-1) => 1
     (count result-2) => 1))
 
-(deftest test-tc-1
+(fact "tc-1"
   (let [tps (make-triples [[(b :a) :p (b) ] [:d :e (l "hola" "es")]])
         result-1 (filter (tc (subject? (matches-bnode? :a)))
                          tps)
         result-2 (filter (tc (object? (is-bnode?)))
                          tps)]
-    (is (= 1 (count result-1)))
-    (is (= 1 (count result-2)))))
+    (count result-1) => 1
+    (count result-2) => 1))
 
-
-(deftest test-predicate-2
-  (init-jena-framework)
-  (is (triple-check-apply (has-datatype? :int) (d (Integer. 1))))
-  (is (not (triple-check-apply (has-datatype? :int) (d 2.0))))
-  (is (triple-check-apply (has-datatype? "http://www.w3.org/2001/XMLSchema#int") (d (Integer. 1)))))
+(fact "predicate-2"
+  (triple-check-apply (has-datatype? :int) (d (Integer. 1))) => truthy
+  (triple-check-apply (has-datatype? :int) (d 2.0)) =not=> truthy
+  (triple-check-apply
+   (has-datatype? "http://www.w3.org/2001/XMLSchema#int") (d (Integer. 1))) => truthy)
 
 (fact "predicate-3"
   (triple-check-apply (literal-fn? (fn [l] true )) (l "cat")) => true
