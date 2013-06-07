@@ -183,7 +183,7 @@ WHERE {
                  first
                  (build-filter *sparql-framework*)
                  .toString)]
-    (is (= res "( bound(?date) < \"2005-01-01T00:00:00Z\"^^xsd:dateTime )"))))
+    res => "( bound(?date) < \"2005-01-01T00:00:00Z\"^^xsd:dateTime )"))
 
 (fact "go-back-query"
   (let [query (defquery
