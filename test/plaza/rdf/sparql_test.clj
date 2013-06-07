@@ -143,7 +143,7 @@ WHERE {
         pattern (make-pattern [[:?x :b :c]])]
     (triples-abstraction triples
                          (subject?
-                          (uri? "http://plaza.org/ontologies/a"))
+                          (matches-uri? "http://plaza.org/ontologies/a"))
                          {:subject :?x}) => pattern))
 
 (fact "build-filters-2"

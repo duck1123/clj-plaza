@@ -8,9 +8,9 @@
                                create-blank-node create-literal create-property
                                create-resource create-typed-literal
                                critical-read critical-write expand-ns
-                               find-datatype is-property literal-datatype-uri
+                               find-datatype literal-datatype-uri
                                literal-language literal-lexical-form
-                               model-critical-read parse-format output-string
+                               model-critical-read parse-format property? output-string
                                resource-id to-java to-string walk-triples]]
         [plaza.rdf.sparql :only [*sparql-framework* alter-root-sparql-framework
                                  build-query pattern-bind pattern-reject-unbound
@@ -111,7 +111,7 @@
 
 (deftype JenaResource [res]
   RDFNode
-  (blank? [resource]
+  (bnode? [resource]
     false)
   (resource? [resource]
     true)
@@ -162,7 +162,7 @@
     res)
   (to-string [resource]
     (str "_:" (resource-id resource)))
-  (blank? [resource]
+  (bnode? [resource]
     true)
   (resource? [resource]
     false)
@@ -203,7 +203,7 @@
       (if (= "" lang)
         (literal-lexical-form resource)
         (str  (literal-lexical-form resource) "@" lang))))
-  (blank? [resource]
+  (bnode? [resource]
     false)
   (resource? [resource]
     false)
@@ -242,7 +242,7 @@
     res)
   (to-string [resource]
     (str  "\""(literal-lexical-form resource) "\"^^<" (literal-datatype-uri resource) ">"))
-  (blank? [resource]
+  (bnode? [resource]
     false)
   (resource? [resource]
     false)
@@ -282,7 +282,7 @@
     res)
   (to-string [resource]
     (str res))
-  (blank? [resource]
+  (bnode? [resource]
     false)
   (resource? [resource]
     true)

@@ -27,7 +27,7 @@
 
 (defprotocol RDFNode
   "Common queries for objects that can be inserted in a RDF graph"
-  (blank? [resource]
+  (bnode? [resource]
     "Returns true if this resource is a blank node")
   (resource? [resource]
     "Returns true if this resource is not a literal or datatype literal")
@@ -35,6 +35,13 @@
     "Returns true if this resource is a RDF property")
   (literal? [resource]
     "Returns true if this resource is a RDF literal"))
+
+(extend-type Object
+  RDFNode
+  (bnode? [_] false)
+  (resource? [_] false)
+  (property? [_] false)
+  (literal? [_] false))
 
 (defprotocol RDFResource
   "Any object that can be inserted in a RDF graph"
@@ -216,7 +223,7 @@
   (if (or (string? resource)
           (keyword? resource))
     false
-    (blank? resource)))
+    (bnode? resource)))
 
 (defn blank-node
   ([]
@@ -419,7 +426,7 @@
   (let [mts (check-triples ts)]
     (remove-triples *rdf-model* mts)))
 
-(defn is-model
+(defn model?
   "Checks if an object is a model"
   [obj]
   (instance? plaza.rdf.core.RDFModel obj))

@@ -123,7 +123,7 @@
     res)
   (to-string [resource]
     (str res))
-  (blank? [resource]
+  (bnode? [resource]
     false)
   (resource? [resource]
     true)
@@ -161,7 +161,7 @@
     res)
   (to-string [resource]
     (str "_:" (resource-id resource)))
-  (blank? [resource]
+  (bnode? [resource]
     true)
   (resource? [resource]
     false)
@@ -201,7 +201,7 @@
       (if (= "" lang)
         (literal-lexical-form resource)
         (str  (literal-lexical-form resource) "@" lang))))
-  (blank? [resource]
+  (bnode? [resource]
     false)
   (resource? [resource]
     false)
@@ -242,7 +242,7 @@
     res)
   (to-string [resource]
     (str res))
-  (blank? [resource]
+  (bnode? [resource]
     false)
   (resource? [resource]
     false)
@@ -281,7 +281,7 @@
     res)
   (to-string [resource]
     (str res))
-  (blank? [resource]
+  (bnode? [resource]
     false)
   (resource? [resource]
     true)

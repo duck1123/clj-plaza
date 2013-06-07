@@ -28,7 +28,7 @@
 
 ;; auxiliary functions
 (defn find-property [prop triples]
-  (first (filter (tc (predicate? (uri? prop))) triples)))
+  (first (filter (tc (predicate? (matches-uri? prop))) triples)))
 
 ;; Protocols
 (defprotocol OntologyModel

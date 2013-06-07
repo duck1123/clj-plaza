@@ -13,7 +13,7 @@
         res (create-resource model "http://test.com/test")
         https-res (create-property model "https://test.com/test")]
 
-    res                =not=> blank?
+    res                =not=> bnode?
     res                =not=> property?
     (to-string res)        => "http://test.com/test"
     res                    => resource?
@@ -27,9 +27,9 @@
         res (create-property model "http://test.com/test")
         https-res (create-property model "https://test.com/test")]
     (to-string res)       => "http://test.com/test"
-    res               =not=> is-blank
-    res                   => is-resource
-    res                   => is-property
+    res               =not=> bnode?
+    res                   => resource?
+    res                   => property?
     (resource-id res)     => "http://test.com/test"
     (qname-prefix res)    => "http://test.com/"
     (qname-local res)     => "test"
@@ -39,7 +39,7 @@
   (let [model (build-model :jena)
         res (create-blank-node model "a")]
     (to-string res)        => "_:a"
-    res                    => blank?
+    res                    => bnode?
     res                =not=> resource?
     res                =not=> property?
     (resource-id res)      => "a"
@@ -50,7 +50,7 @@
   (let [model (build-model :jena)
         res (create-literal model "a" "es")]
     (is (= "a@es" (to-string res)))
-    (is (not (blank? res)))
+    (is (not (bnode? res)))
     (is (not (resource? res)))
     (is (not (property? res)))
     (is (literal? res))
@@ -63,7 +63,7 @@
   (let [model (build-model :jena)
         res (create-typed-literal model (Integer. 2))]
     (is (= "\"2\"^^<http://www.w3.org/2001/XMLSchema#int>" (to-string res)))
-    (is (not (blank? res)))
+    (is (not (bnode? res)))
     (is (not (resource? res)))
     (is (not (property? res)))
     (is (literal? res))

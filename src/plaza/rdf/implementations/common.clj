@@ -336,9 +336,11 @@
       (if (= (find-jena-datatype (literal-datatype-uri atom)) (find-jena-datatype :xmlliteral))
         (Node/createLiteral (literal-lexical-form atom) (literal-language atom) false)
         (Node/createLiteral (literal-lexical-form atom) (literal-language atom) (find-jena-datatype (literal-datatype-uri atom))))
-      (if (blank? atom) (Node/createAnon (AnonId. (resource-id atom)))
-          (Node/createURI (if (is-resource atom) (to-string atom)
-                              (str atom)))))))
+      (if (bnode? atom)
+        (Node/createAnon (AnonId. (resource-id atom)))
+        (Node/createURI (if (resource? atom)
+                          (to-string atom)
+                          (str atom)))))))
 
 (defn build-query-fn
   "Transforms a query representation into a Jena Query object"

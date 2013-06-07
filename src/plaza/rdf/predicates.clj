@@ -3,7 +3,7 @@
 ;; @date 04.05.2010
 
 (ns plaza.rdf.predicates
-  (:use [plaza.rdf.core :only [*rdf-model* blank? expand-ns find-datatype
+  (:use [plaza.rdf.core :only [*rdf-model* bnode? expand-ns find-datatype
                                find-ns-registry literal-datatype-uri
                                literal-language literal-lexical-form
                                literal-value qname-local qname-prefix
@@ -11,6 +11,11 @@
         [plaza.rdf.sparql :only [*sparql-framework* var-expr?]]
         [plaza.utils :only [keyword-to-string]])
   (:require [plaza.rdf.core :as rdf]))
+
+(defn literal-fn?
+  "Applies a custom predicate function to a literal"
+  [f]
+  (fn [triple atom] (f atom)))
 
 ;; boolean checkers
 
@@ -136,41 +141,20 @@
 
 ;; predicates
 
-(defn matches-uri?
-  "Matches a URI or curie against a triple atom"
-  ([ns local]
-     (matches-uri? (expand-ns ns local)))
-  ([uri]
+(defn is-bnode?
+  "Matches a blank node"
+  ([]
      (fn [triple atom]
-       (and (not (or (keyword? atom)
-                     (rdf/literal? atom)))
-            (= (resource-id atom) uri)))))
-
-(defn matches-qname-prefix?
-  "Matches a URI or curie against a triple atom"
-  [prefix]
-  (fn [triple atom]
-    (and (not (or (keyword? atom) (rdf/literal? atom)))
-         (= (qname-prefix atom)
-            (or (find-ns-registry prefix)
-                (keyword-to-string prefix))))))
-
-(defn matches-qname-local?
-  "Matches a URI or curie against a triple atom"
-  [local]
-  (fn [triple atom]
-    (and (not (or (keyword? atom)
-                  (rdf/literal? atom)))
-         (= (qname-local atom)
-            (keyword->string local)))))
-
-(defn matches-literal-value?
-  "Matches a literal with a certain literal value"
-  [lit]
-  (fn [triple atom]
-    (cond (rdf/literal? atom)
-          (= (literal-lexical-form atom) (str lit))
-          true false)))
+       (if (or (string? atom)
+               (keyword? atom))
+         false
+         (bnode? atom))))
+  ([id]
+     (fn [triple atom]
+       (and (not (or (string? atom) (keyword? atom)))
+            (instance? plaza.rdf.core.RDFResource atom)
+            (bnode? atom)
+            (= (name id) (str (resource-id atom)))))))
 
 (defn is-literal?
   "Matches a literal with a certain literal value"
@@ -181,12 +165,35 @@
           true
           true false)))
 
-(defn literal-fn?
-  "Applies a custom predicate function to a literal"
-  [f]
-  (fn [triple atom] (f atom)))
+(defn is-resource?
+  "Matches a literal with a certain literal value"
+  []
+  (fn [triple atom]
+    (and (instance? plaza.rdf.core.RDFResource atom)
+         (rdf/resource? atom))))
 
-(defn literal?
+(defn is-variable?
+  "Matches a variable"
+  []
+  (fn [triple atom]
+    (var-expr? *sparql-framework* atom)))
+
+(defn is-optional?
+  "Checks if a triple is an optional part of a query"
+  []
+  (fn [triple atom]
+    (= true (:optional (meta triple)))))
+
+(defn has-datatype?
+  "Matches the value or the value and language of a literal"
+  [data-uri]
+  (fn [triple atom]
+    (and (instance? plaza.rdf.core.RDFResource atom)
+         (rdf/literal? atom)
+         (= (find-datatype *rdf-model* (literal-datatype-uri atom))
+            (find-datatype *rdf-model* data-uri)))))
+
+(defn matches-literal?
   "Matches the value or the value and language of a literal"
   ([val]
      (fn [triple atom]
@@ -200,56 +207,48 @@
             (= (literal-value atom) val)
             (= (literal-language atom) lang)))))
 
-(defn has-datatype?
-  "Matches the value or the value and language of a literal"
-  [data-uri]
-  (fn [triple atom]
-    (and (instance? plaza.rdf.core.RDFResource atom)
-         (rdf/literal? atom)
-         (= (find-datatype *rdf-model* (literal-datatype-uri atom))
-            (find-datatype *rdf-model* data-uri)))))
-
-(defn is-variable?
-  "Matches a variable"
-  []
-  (fn [triple atom]
-    (var-expr? *sparql-framework* atom)))
-
-(defn is-bnode?
-  "Matches a blank node"
-  ([]
-     (fn [triple atom]
-       (if (or (string? atom)
-               (keyword? atom))
-         false
-         (blank? atom))))
-  ([id]
-     (fn [triple atom]
-       (and (not (or (string? atom) (keyword? atom)))
-            (instance? plaza.rdf.core.RDFResource atom)
-            (blank? atom)
-            (= (name id) (str (resource-id atom)))))))
-
-(defn is-resource?
+(defn matches-literal-value?
   "Matches a literal with a certain literal value"
-  []
+  [lit]
   (fn [triple atom]
-    (and (instance? plaza.rdf.core.RDFResource atom)
-         (rdf/resource? atom))))
+    (cond (rdf/literal? atom)
+          (= (literal-lexical-form atom) (str lit))
+          true false)))
 
-(defn optional?
-  "Checks if a triple is an optional part of a query"
-  []
+(defn matches-qname-local?
+  "Matches a URI or curie against a triple atom"
+  [local]
   (fn [triple atom]
-    (= true (:optional (meta triple)))))
+    (cond (or (keyword? atom)
+              (rdf/literal? atom))
+          false
+          true
+          (= (qname-local atom) (keyword-to-string local)))))
 
-(defn regex?
+(defn matches-qname-prefix?
+  "Matches a URI or curie against a triple atom"
+  [prefix]
+  (fn [triple atom]
+    (and (not (or (keyword? atom) (rdf/literal? atom)))
+         (= (qname-prefix atom)
+            (or (find-ns-registry prefix)
+                (keyword-to-string prefix))))))
+
+(defn matches-regex?
   "Checks if a value matches a ceratin regular expression"
   [regex]
   (fn [triple atom]
     (not (empty? (re-find regex (str atom))))))
 
-
+(defn matches-uri?
+  "Matches a URI or curie against a triple atom"
+  ([ns local]
+     (matches-uri? (expand-ns ns local)))
+  ([uri]
+     (fn [triple atom]
+       (and (not (or (keyword? atom)
+                     (rdf/literal? atom)))
+            (= (resource-id atom) uri)))))
 
 (defn tca
   "Shortcut for triple-check-apply"

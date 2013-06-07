@@ -34,7 +34,7 @@
 (init-sesame-framework)
 
 (deftest test-create-model-sesame
-  (is-model (build-model :sesame)))
+  (model? (build-model :sesame)))
 
 
 (deftest test-with-rdf-ns-sesame

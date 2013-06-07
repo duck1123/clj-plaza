@@ -109,7 +109,10 @@
 ;; (deftest test-abstraction-1
 ;;   (let [triples (make-triples [[:a :b :c]])
 ;;         pattern (make-pattern [[:?x :b :c]])]
-;;     (is (= pattern (triples-abstraction triples (subject? (uri? "http://plaza.org/ontologies/a")) {:subject :?x})))))
+;;     (is (= pattern (triples-abstraction triples
+;;                                         (subject?
+;;                                          (matches-uri? "http://plaza.org/ontologies/a"))
+;;                                         {:subject :?x})))))
 
 (deftest test-build-filters-2
   (let [framework (plaza.rdf.implementations.sesame.SesameSparqlFramework.)
