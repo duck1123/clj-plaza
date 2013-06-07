@@ -1,7 +1,7 @@
 (ns plaza.rdf.core-test-sesame
-  (:use [plaza.rdf core]
-        [plaza.rdf.implementations sesame]
-        [clojure.test]))
+  (:use plaza.rdf.core
+        plaza.rdf.implementations.sesame
+        midje.sweet))
 
 ;; rdf/xml used in the tests
 (def ^:dynamic *test-xml*
@@ -34,19 +34,19 @@
 ;; we'll test with Sesame
 (init-sesame-framework)
 
-(deftest test-create-model-sesame
-  (model? (build-model :sesame)))
+(fact "create-model-sesame"
+  (build-model :sesame) => model?)
 
 
-(deftest test-with-rdf-ns-sesame
+(fact "with-rdf-ns-sesame"
   (let [before *rdf-ns*
         new-ns "hello"
         result (with-rdf-ns new-ns
                  *rdf-ns*)]
-    (is (= new-ns result))
-    (is (= before *rdf-ns*))))
+    result => new-ns
+    before => *rdf-ns*))
 
-(deftest test-with-model-sesame
+(fact "with-model-sesame"
   (let [before-ns *rdf-ns*
         before-model *rdf-model*
         new-ns "hello"
@@ -54,48 +54,48 @@
         result (with-rdf-ns new-ns
                  (with-model new-model
                    [*rdf-ns* *rdf-model*]))]
-    (is (= [new-ns new-model] result))
-    (is (= before-ns *rdf-ns*))
-    (is (= before-model *rdf-model*))))
+    result       => [new-ns new-model]
+    before-ns    => *rdf-ns*
+    before-model => *rdf-model*))
 
-(deftest test-make-property-sesame
+(fact "make-property-sesame"
   (let [m (build-model :sesame)
         p1 (with-model m
              (rdf-property rdf :hola))
         p2 (with-model m
              (rdf-property rdf:type))]
-    (is (= (to-string p1) "http://www.w3.org/1999/02/22-rdf-syntax-ns#hola"))
-    (is (= (to-string p2) "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))))
+    (to-string p1) => "http://www.w3.org/1999/02/22-rdf-syntax-ns#hola"
+    (to-string p2) => "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
 
-(deftest test-make-resource-sesame
+(fact "make-resource-sesame"
   (let [m (build-model :sesame)
         p1 (with-model m
              (rdf-resource rdf :Mundo))
         p2 (with-model m
              (rdf-property rdfs:Class))]
-    (is (= (to-string p1) "http://www.w3.org/1999/02/22-rdf-syntax-ns#Mundo"))
-    (is (= (to-string p2) "http://www.w3.org/2000/01/rdf-schema#Class"))))
+    (to-string p1) => "http://www.w3.org/1999/02/22-rdf-syntax-ns#Mundo"
+    (to-string p2) => "http://www.w3.org/2000/01/rdf-schema#Class"))
 
 
-(deftest test-make-literal-sesame
+(fact "make-literal-sesame"
   (let [m (build-model :sesame)
         p1 (with-model m
              (rdf-literal "test"))
         p2 (with-model m
              (rdf-literal "test" "es"))]
-    (is (= (to-string p1) "test"))
-    (is (= (to-string p2) "test@es"))))
+    (to-string p1) => "test"
+    (to-string p2) => "test@es"))
 
-(deftest test-make-typed-literal-sesame
+(fact "make-typed-literal-sesame"
   (let [m (build-model :sesame)
         p1 (with-model m
              (rdf-typed-literal 2))
         p2 (with-model m
              (rdf-typed-literal 2 :anyuri))]
-    (is (= (to-string p1) "\"2\"^^<http://www.w3.org/2001/XMLSchema#int>"))
-    (is (= (to-string p2) "\"2\"^^<http://www.w3.org/2001/XMLSchema#anyURI>"))))
+    (to-string p1) => "\"2\"^^<http://www.w3.org/2001/XMLSchema#int>"
+    (to-string p2) => "\"2\"^^<http://www.w3.org/2001/XMLSchema#anyURI>"))
 
-(deftest test-triple-subject-sesame
+(fact "triple-subject-sesame"
   (let [m (build-model :sesame)
         p1 (with-model m
              (with-rdf-ns "http://test.com/"
@@ -103,10 +103,10 @@
         p2 (with-model m
              (with-rdf-ns "http://test.com/"
                (triple-subject [rdf :A])))]
-    (is (= (to-string p1) "http://test.com/A"))
-    (is (= (to-string p2) "http://www.w3.org/1999/02/22-rdf-syntax-ns#A"))))
+    (to-string p1) => "http://test.com/A"
+    (to-string p2) => "http://www.w3.org/1999/02/22-rdf-syntax-ns#A"))
 
-(deftest test-triple-predicate-sesame
+(fact "triple-predicate-sesame"
   (let [m (build-model :sesame)
         p1 (with-model m
              (with-rdf-ns "http://test.com/"
@@ -114,10 +114,10 @@
         p2 (with-model m
              (with-rdf-ns "http://test.com/"
                (triple-subject [rdf :p])))]
-    (is (= (to-string p1) "http://test.com/p"))
-    (is (= (to-string p2) "http://www.w3.org/1999/02/22-rdf-syntax-ns#p"))))
+    (to-string p1) => "http://test.com/p"
+    (to-string p2) => "http://www.w3.org/1999/02/22-rdf-syntax-ns#p"))
 
-(deftest test-triple-object-sesame
+(fact "triple-object-sesame"
   (let [m (build-model :sesame)
         p1 (with-model m
              (with-rdf-ns "http://test.com/"
@@ -131,106 +131,115 @@
         p4 (with-model m
              (with-rdf-ns "http://test.com/"
                (triple-object (d 2))))]
-    (is (= (to-string p1) "http://test.com/p"))
-    (is (= (to-string p2) "http://www.w3.org/1999/02/22-rdf-syntax-ns#p"))
-    (is (= (to-string p3) "test"))
-    (is (= (to-string p4) "\"2\"^^<http://www.w3.org/2001/XMLSchema#int>"))))
+    (to-string p1) => "http://test.com/p"
+    (to-string p2) => "http://www.w3.org/1999/02/22-rdf-syntax-ns#p"
+    (to-string p3) => "test"
+    (to-string p4) => "\"2\"^^<http://www.w3.org/2001/XMLSchema#int>"))
 
-(deftest test-rdf-triple-a-sesame
+(fact "rdf-triple-a-sesame"
   (let [m (build-model :sesame)
         ts (with-model m
              (with-rdf-ns "http://test.com/"
                (rdf-triple [:a :b :c])))]
-    (is (= (count ts) 3))
-    (is (= (to-string (nth ts 0)) "http://test.com/a"))
-    (is (= (to-string (nth ts 1)) "http://test.com/b"))
-    (is (= (to-string (nth ts 2)) "http://test.com/c"))))
+    (count ts)             => 3
+    (to-string (nth ts 0)) => "http://test.com/a"
+    (to-string (nth ts 1)) => "http://test.com/b"
+    (to-string (nth ts 2)) => "http://test.com/c"))
 
-(deftest test-rdf-triple-b-sesame
+(fact "rdf-triple-b-sesame"
   (let [m (build-model :sesame)
         ts (with-model m
              (with-rdf-ns "http://test.com/"
                (rdf-triple [:a  [:b :c
                                  :d :e]])))]
-    (is (= (count ts) 2))
+    (count ts) => 2
+
     (let [fts (nth ts 0)
           sts (nth ts 1)]
-      (is (= (to-string (nth fts 0)) "http://test.com/a"))
-      (is (= (to-string (nth fts 1)) "http://test.com/b"))
-      (is (= (to-string (nth fts 2)) "http://test.com/c"))
-      (is (= (to-string (nth sts 0)) "http://test.com/a"))
-      (is (= (to-string (nth sts 1)) "http://test.com/d"))
-      (is (= (to-string (nth sts 2)) "http://test.com/e")))))
+      (to-string (nth fts 0)) => "http://test.com/a"
+      (to-string (nth fts 1)) => "http://test.com/b"
+      (to-string (nth fts 2)) => "http://test.com/c"
+      (to-string (nth sts 0)) => "http://test.com/a"
+      (to-string (nth sts 1)) => "http://test.com/d"
+      (to-string (nth sts 2)) => "http://test.com/e")))
 
-(deftest test-add-triples-sesame
+(fact "add-triples-sesame"
   (let [m (build-model :sesame)]
     (with-model m (model-add-triples [[:a :b :c] [:d :e :f] [:g [:h :i :j :k]]]))
-    (is (= 4 (count (walk-triples m (fn [s p o] [s p o])))))))
+    (count (walk-triples m (fn [s p o] [s p o]))) => 4))
 
-(deftest test-add-triples-2-sesame
+(fact "add-triples-2-sesame"
   (let [m (build-model :sesame)]
     (with-model m (model-add-triples (make-triples [[:a :b :c] [:d :e :f] [:g [:h :i :j :k]]])))
-    (is (= 4 (count (walk-triples m (fn [s p o] [s p o])))))))
+    (count (walk-triples m (fn [s p o] [s p o]))) => 4))
 
-(deftest test-remove-triples-1-sesame
+(fact "remove-triples-1-sesame"
   (let [m (defmodel
              (model-add-triples (make-triples [[:a :b (d 2)]]))
              (model-add-triples (make-triples [[:e :f (l "test")]])))]
-    (do (with-model m (model-remove-triples (make-triples [[:a :b (d 2)]])))
-        (= 1 (count (model->triples m))))))
+    (with-model m (model-remove-triples (make-triples [[:a :b (d 2)]])))
+    (count (model->triples m)) => 1))
 
-(deftest test-optional-sesame
+(fact "optional-sesame"
   (let [optional? (optional [:foo])]
-    (is (:optional (meta (first optional?))))))
+    (:optional (meta (first optional?))) => truthy))
 
-(deftest test-optional-2-sesame
+(fact "optional-2-sesame"
   (let [optional? (optional [:foo :bar])
         opt? (opt [:foo :bar])]
-    (is (= optional? opt?))))
+    optional? => opt?))
 
-(deftest test-document->model-1-sesame
+(fact "document->model-1-sesame"
   (let [m (build-model :sesame)
-        _m (with-model m (document->model (java.io.ByteArrayInputStream. (.getBytes *test-xml*)) :xml))]
-    (is (= (count (model->triples m)) 3))))
+        _m (with-model m
+             (document->model
+              (java.io.ByteArrayInputStream. (.getBytes *test-xml*)) :xml))]
+    (count (model->triples m)) => 3))
 
-(deftest test-document->model-2-sesame
+(fact "document->model-2-sesame"
   (let [m (build-model :sesame)
-        _m (with-model m (document->model (java.io.ByteArrayInputStream. (.getBytes *test-xml-blanks*)) :xml))]
-    (is (= (count (model->triples m)) 4))
-    (is (or (blank-node? (o (first (model->triples m))))
-            (blank-node? (o (second (model->triples m))))
-            (blank-node? (o (nth (model->triples m) 2)))
-            (blank-node? (o (nth (model->triples m) 3)))))))
+        _m (with-model m
+             (document->model
+              (java.io.ByteArrayInputStream. (.getBytes *test-xml-blanks*)) :xml))]
+    (count (model->triples m))          => 4
+    (o (first (model->triples m)))      => blank-node?
+    (o (second (model->triples m))) =not=> blank-node?
+    (o (nth (model->triples m) 2))  =not=> blank-node?
+    (o (nth (model->triples m) 3))  =not=> blank-node?))
 
-(deftest test-find-resources-sesame
+(fact "find-resources-sesame"
   (let [m (build-model :sesame)
-        _m (with-model m (document->model (java.io.ByteArrayInputStream. (.getBytes *test-xml*)) :xml))
+        _m (with-model m
+             (document->model
+              (java.io.ByteArrayInputStream. (.getBytes *test-xml*)) :xml))
         res (find-resources m)]
-    (is (= (count res) 2))))
+    (count res) => 2))
 
-(deftest test-find-resource-uris-sesame
+(fact "find-resource-uris-sesame"
   (let [m (build-model :sesame)
-        _m (with-model m (document->model (java.io.ByteArrayInputStream. (.getBytes *test-xml*)) :xml))
+        _m (with-model m
+             (document->model
+              (java.io.ByteArrayInputStream. (.getBytes *test-xml*)) :xml))
         res (find-resource-uris m)]
-    (is (= (count res) 2))))
+    (count res) => 2))
 
-(deftest test-blank-node-sesame
+(fact "blank-node-sesame"
   (let [b1 (blank-node)
         b2 (b)
         b3 (blank-node :a)
         b4 (b :a)]
-    (is (blank-node? b1))
-    (is (blank-node? b2))
-    (is (blank-node? b3))
-    (is (blank-node? b4))
-    (is (= :a (keyword (blank-node-id b3))))
-    (is (= :a (keyword (blank-node-id b4))))))
+    b1 => blank-node?
+    b2 => blank-node?
+    b3 => blank-node?
+    b4 => blank-node?
+    (keyword (blank-node-id b3)) => :a
+    (keyword (blank-node-id b4)) => :a))
 
-(deftest test-blank-node-is-sesame
-  (is (not (blank-node? :?a)))
-  (is (not (blank-node? (d 2))))
-  (is (not (blank-node? (l "test"))))
-  (is (not (blank-node? (rdf-resource "http://test.com/Test")))))
+(fact "test-blank-node-is-sesame"
+  :?a                                   =not=> blank-node?
+  (d 2)                                 =not=> blank-node?
+  (l "test")                            =not=> blank-node?
+  (rdf-resource "http://test.com/Test") =not=> blank-node?)
 
-(deftest test-has-meta-sesame
-  (is (:triples (meta (make-triples [[:a :b :c]])))))
+(fact "has-meta-sesame"
+  (:triples (meta (make-triples [[:a :b :c]]))) => truthy)
