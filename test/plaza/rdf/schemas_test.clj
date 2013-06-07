@@ -11,10 +11,11 @@
 (use 'plaza.rdf.vocabularies.foaf)
 (init-vocabularies)
 
-(defonce *test-model* (make-rdfs-schema ["http://something/" "Good"]
-                                        :name   {:uri "http://test.com/name"      :range :string}
-                                        :price  {:uri ["http://test.com/" :price] :range :float}
-                                        :number {:uri :number                     :range :int}))
+(defonce ^:dynamic *test-model*
+  (make-rdfs-schema ["http://something/" "Good"]
+                    :name   {:uri "http://test.com/name"      :range :string}
+                    :price  {:uri ["http://test.com/" :price] :range :float}
+                    :number {:uri :number                     :range :int}))
 
 (deftest test-extend-schemas
   (let [extended (extend-rdfs-schemas "http://test.com/Foo" [*test-model*])]

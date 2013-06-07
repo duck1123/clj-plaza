@@ -4,7 +4,8 @@
         [clojure.test]))
 
 ;; rdf/xml used in the tests
-(def *test-xml* "<rdf:RDF
+(def ^:dynamic *test-xml*
+  "<rdf:RDF
     xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"
     xmlns:test=\"http://plaza.org/ontologies/\" >
   <rdf:Description rdf:about=\"http://plaza.org/ontologies/a\">
