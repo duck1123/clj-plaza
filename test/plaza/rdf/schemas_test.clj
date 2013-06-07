@@ -1,6 +1,5 @@
 (ns plaza.rdf.schemas-test
-  (:use clojure.test
-        plaza.rdf.core
+  (:use plaza.rdf.core
         plaza.rdf.implementations.sesame
         plaza.rdf.schemas
         plaza.rdf.sparql

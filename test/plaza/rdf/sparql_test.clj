@@ -1,6 +1,5 @@
 (ns plaza.rdf.sparql-test
-  (:use clojure.test
-        [plaza.rdf.core :only [d rdf:type optional opt l make-triples
+  (:use [plaza.rdf.core :only [d rdf:type optional opt l make-triples
                                defmodel model-add-triples to-string
                                triple-predicate triple-subject triples-abstraction]]
         plaza.rdf.implementations.jena
