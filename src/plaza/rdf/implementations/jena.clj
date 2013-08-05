@@ -173,7 +173,8 @@
   (create-resource [model uri]
                    (if (instance? plaza.rdf.core.RDFResource uri)
                      uri
-                     (if (.startsWith (keyword-to-string uri) "http://")
+                     (if (or (.startsWith (keyword-to-string uri) "http://")
+                             (.startsWith (keyword-to-string uri) "https://"))
                        (plaza.rdf.implementations.jena.JenaResource.
                         (.createResource mod (keyword-to-string uri)))
                        (plaza.rdf.implementations.jena.JenaResource.
@@ -185,7 +186,8 @@
                        uri
                        (plaza.rdf.implementations.jena.JenaProperty.
                         (.createProperty mod (str uri))))
-                     (if (.startsWith (keyword-to-string uri) "http://")
+                     (if (or (.startsWith (keyword-to-string uri) "http://")
+                             (.startsWith (keyword-to-string uri) "https://"))
                        (plaza.rdf.implementations.jena.JenaProperty.
                         (.createProperty mod (keyword-to-string uri)))
                        (plaza.rdf.implementations.jena.JenaProperty.

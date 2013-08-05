@@ -9,25 +9,29 @@
 
 (deftest test-jena-resource
   (let [model (build-model :jena)
-        res (create-resource model "http://test.com/test")]
+        res (create-resource model "http://test.com/test")
+        https-res (create-resource model "https://test.com/test")]
     (is (= "http://test.com/test" (to-string res)))
     (is (not (is-blank res)))
     (is (is-resource res))
     (is (not (is-property res)))
     (is (= "http://test.com/test" (resource-id res)))
     (is (= "http://test.com/" (qname-prefix res)))
-    (is (= "test" (qname-local res)))))
+    (is (= "test" (qname-local res)))
+    (is (= "https://test.com/test" (to-string https-res)))))
 
 (deftest test-jena-property
   (let [model (build-model :jena)
-        res (create-property model "http://test.com/test")]
+        res (create-property model "http://test.com/test")
+        https-res (create-property model "https://test.com/test")]
     (is (= "http://test.com/test" (to-string res)))
     (is (not (is-blank res)))
     (is (is-resource res))
     (is (is-property res))
     (is (= "http://test.com/test" (resource-id res)))
     (is (= "http://test.com/" (qname-prefix res)))
-    (is (= "test" (qname-local res)))))
+    (is (= "test" (qname-local res)))
+    (is (= "https://test.com/test" (to-string https-res)))))
 
 
 (deftest test-jena-blank-node
