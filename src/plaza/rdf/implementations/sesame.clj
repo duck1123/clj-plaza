@@ -221,7 +221,8 @@
   (create-resource [model uri]
                    (if (instance? plaza.rdf.core.RDFResource uri)
                      uri
-                     (if (.startsWith (keyword-to-string uri) "http://")
+                     (if (or (.startsWith (keyword-to-string uri) "http://")
+                             (.startsWith (keyword-to-string uri) "https://"))
                        (plaza.rdf.implementations.sesame.SesameResource. (.. ValueFactoryImpl getInstance (createURI (keyword-to-string uri))))
                        (plaza.rdf.implementations.sesame.SesameResource. (.. ValueFactoryImpl getInstance (createURI (expand-ns *rdf-ns* (keyword-to-string uri))))))))
   (create-property [model ns local] (plaza.rdf.implementations.sesame.SesameProperty. (.. ValueFactoryImpl getInstance (createURI (expand-ns ns local)))))
@@ -229,7 +230,8 @@
                    (if (or (instance? plaza.rdf.implementations.sesame.SesameResource uri)
                            (instance? plaza.rdf.implementations.sesame.SesameProperty uri))
                      (plaza.rdf.implementations.sesame.SesameProperty. (.. ValueFactoryImpl getInstance (createURI (to-string uri))))
-                     (if (.startsWith (keyword-to-string uri) "http://")
+                     (if (or (.startsWith (keyword-to-string uri) "http://")
+                             (.startsWith (keyword-to-string uri) "https://"))
                        (plaza.rdf.implementations.sesame.SesameProperty. (.. ValueFactoryImpl getInstance (createURI (keyword-to-string uri))))
                        (plaza.rdf.implementations.sesame.SesameProperty. (.. ValueFactoryImpl getInstance (createURI (expand-ns *rdf-ns* (keyword-to-string uri))))))))
   (create-blank-node [model] (plaza.rdf.implementations.sesame.SesameBlank. (.. ValueFactoryImpl getInstance (createBNode (str (.getTime (java.util.Date.)))))))
