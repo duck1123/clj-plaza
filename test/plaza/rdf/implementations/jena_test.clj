@@ -77,12 +77,12 @@
         counter (ref 0)
         sync (promise)
         sync-lock (promise)]
-    (.start (Thread. (fn [] (do
-                             (model-critical-write *m*
-                                                   (deliver sync-lock :continue)
-                                                   (dosync
-                                                    (alter counter (fn [x] :a)))
-                                                   (deliver sync :continue))))))
+    (future
+      (model-critical-write *m*
+                            (deliver sync-lock :continue)
+                            (dosync
+                             (alter counter (fn [x] :a)))
+                            (deliver sync :continue)))
     @sync-lock
     (model-critical-write *m*
                           (dosync

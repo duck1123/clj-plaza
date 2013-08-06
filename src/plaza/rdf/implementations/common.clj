@@ -182,8 +182,8 @@
   [expr symbol]
   {:expression (keyword symbol)
    :kind :two-parts
-   :args [(parse-next-filter-expr (.getArg expr 1))
-          (parse-next-filter-expr (.getArg expr 2))]})
+   :args (mapv #(parse-next-filter-expr (.getArg expr %))
+               [1 2])})
 
 (defn- parse-filter-expr-1
   [expr symbol]
@@ -260,7 +260,7 @@
 (defn parse-sparql->pattern-fn
   "Parses a SPARQL query and transform it into a pattern"
   [sparql-string-or-query]
-  (filter (fn [x] (not (:filter (meta x)))) (sparql->pattern-filters sparql-string-or-query)))
+  (filter (comp not :filter meta) (sparql->pattern-filters sparql-string-or-query)))
 
 (defn parse-sparql->query-fn
   "Parses a SPARQL query and builds a whole query dictionary"

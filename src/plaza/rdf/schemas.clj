@@ -160,7 +160,8 @@
                                     [[subject (rdf-resource rdf:type) (rdf-resource rdfs:Class)]]
                                     (keys properties))
             super-types-triples (map (fn [st] [subject (rdf-resource rdf:type)
-                                               (rdf-resource st)]) super-types)]
+                                              (rdf-resource st)])
+                                     super-types)]
         (concat pre-super-types super-types-triples))))
 
   (aliases [this] (keys properties)))
@@ -214,7 +215,7 @@
 
 (defn wrap-rdfs-schema
   [uri super-types props ranges]
-  (plaza.rdf.schemas.RDFSModel. uri super-types props ranges))
+  (RDFSModel. uri super-types props ranges))
 
 (defn- parse-rdf-schema-from-model
   [model resource]

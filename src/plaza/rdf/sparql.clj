@@ -382,30 +382,21 @@ with results binding variables in que query pattern"
                       pattern-or-vector
                       (make-pattern pattern-or-vector))
         vars-pre (pattern-collect-vars pattern-pre)
-        vars (if-not (empty? vars-pre) vars-pre [:p])
-        [pattern filterspp] (if-not (empty? vars-pre)
+        vars (if (seq vars-pre) vars-pre [:p])
+        [pattern filterspp] (if (seq vars-pre)
                               [pattern-pre filters-pre]
-                              (let [s (nth (first pattern-pre) 0)
-                                    p (nth (first pattern-pre) 1)
-                                    o (nth (first pattern-pre) 2)]
+                              (let [[s p o] (first pattern-pre)]
                                 [(cons [s ?p o] (rest pattern-pre))
                                  (cons (f :sameTerm  ?p p) filters-pre)]))
         [limit filtersp] (if (some #(= :limit (:expression %1)) filterspp)
                            [(:args (first (filter #(= :limit (:expression %1)) filterspp)))
-                            (filter #(not (= :limit (:expression %1))) filterspp)]
+                            (filter #(not= :limit (:expression %1)) filterspp)]
                            [nil filterspp])
         [offset filters] (if (some #(= :offset (:expression %1)) filtersp)
                            [(:args (first (filter #(= :offset (:expression %1)) filtersp)))
-                            (filter #(not (= :offset (:expression %1))) filtersp)]
+                            (filter #(not= :offset (:expression %1)) filtersp)]
                            [nil filtersp])
-        query (if (empty? filters)
-                (defquery
-                  (query-set-pattern pattern)
-                  (query-set-type :select)
-                  (query-set-vars vars)
-                  (query-set-distinct)
-                  (chain-limit limit)
-                  (chain-offset offset))
+        query (if (seq filters)
                 (defquery
                   (query-set-pattern pattern)
                   (query-set-type :select)
@@ -413,9 +404,15 @@ with results binding variables in que query pattern"
                   (query-set-distinct)
                   (chain-limit limit)
                   (chain-offset offset)
-                  (query-set-filters filters)))]
-    (distinct (model-query-triples model
-                                   query))))
+                  (query-set-filters filters))
+                (defquery
+                  (query-set-pattern pattern)
+                  (query-set-type :select)
+                  (query-set-vars vars)
+                  (query-set-distinct)
+                  (chain-limit limit)
+                  (chain-offset offset)))]
+    (distinct (model-query-triples model query))))
 
 (defn- subject-vars
   [pattern]

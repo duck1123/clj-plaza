@@ -88,15 +88,11 @@
 (defn- model-query-fn
   "Queries a model and returns a map of bindings"
   [model query query-string]
-  ;; (let [query (if (string? query-or-string) (sparql->query query-or-string) query-or-string)
-  ;;   query-string (if (string? query-or-string) query-or-string (str (build-query *sparql-framework* query)))]
-  ;;   (println (str "QUERYING JENA WITH:\r\n" query-string))
   (model-critical-read
    model
    (let [qexec (QueryExecutionFactory/create query-string (to-java model))
-         ;; (let [qexec (QueryExecutionFactory/create (build-query query)  @model)
-         results (iterator-seq (cond (= (:kind query) :select) (.execSelect qexec)))]
-     ;; _results (println (str "BINDING RESULTS: " results))]
+         results (iterator-seq (cond (= (:kind query) :select)
+                                     (.execSelect qexec)))]
      (map #(process-model-query-result model %1) results))))
 
 (defn- model-query-triples-fn
@@ -200,8 +196,8 @@
 
 (deftype JenaLiteral [res]
   RDFResource RDFNode RDFDatatypeMapper JavaObjectWrapper RDFPrintable
-  (to-java
-    [resource] res)
+  (to-java [resource]
+    res)
   (to-string [resource]
     (let [lang (literal-language resource)]
       (if (= "" lang)
@@ -328,7 +324,7 @@
   (create-resource [model ns local]
     (.createResource mod (expand-ns ns local)))
   (create-resource [model uri]
-    (if (instance? plaza.rdf.core.RDFResource uri)
+    (if (instance? RDFResource uri)
       uri
       (if (or (.startsWith (keyword->string uri) "http://")
               (.startsWith (keyword->string uri) "https://"))

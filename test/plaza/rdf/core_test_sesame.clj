@@ -16,7 +16,8 @@
   </rdf:Description>
 </rdf:RDF>")
 
-(def *test-xml-blanks* "<?xml version=\"1.0\"?>
+(def ^:dynamic *test-xml-blanks*
+  "<?xml version=\"1.0\"?>
 <rdf:RDF xmlns:csf=\"http://schemas.microsoft.com/connectedservices/pm#\" xmlns:owl=\"http://www.w3.org/2002/07/owl#\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" xmlns:rdfs=\"http://www.w3.org/2000/01/rdf-schema#\">
     <rdf:Description rdf:about=\"urn:upn_abc\">
         <csf:Phone>
