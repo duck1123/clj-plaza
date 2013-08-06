@@ -85,29 +85,20 @@
 
       (make-custom-type literal))))
 
+(def datatype-symbols
+  #{"xmlliteral" "literal" "anyuri" "boolean" "byte" "date" "datetime"
+    "decimal" "double" "float" "int" "integer" "long" "string"})
+
 (defn datatype-symbol
   "Transforms a XMLSchema datatype URI into a symbol representing the type"
   [literal]
-  (let [lit (let [literal-str (keyword->string literal)]
-              (if (and (.startsWith literal-str "http://") (not= -1 (.indexOf literal-str "#")))
-                (aget (.split literal-str "#") 1)
-                literal))]
-    (condp = lit
-      "xmlliteral" (keyword lit)
-      "literal" (keyword lit)
-      "anyuri" (keyword lit)
-      "boolean" (keyword lit)
-      "byte" (keyword lit)
-      "date" (keyword lit)
-      "datetime" (keyword lit)
-      "decimal" (keyword lit)
-      "double" (keyword lit)
-      "float" (keyword lit)
-      "int" (keyword lit)
-      "integer" (keyword lit)
-      "long" (keyword lit)
-      "string" (keyword lit)
-      nil)))
+  (let [literal-str (keyword->string literal)
+        lit (if (and (.startsWith literal-str "http://")
+                     (not= -1 (.indexOf literal-str "#")))
+              (aget (.split literal-str "#") 1)
+              literal)]
+    (when (datatype-symbols lit)
+      (keyword lit))))
 
 (defn supported-datatype?
   "Returns true if the datatype sym or URI string is supported"
