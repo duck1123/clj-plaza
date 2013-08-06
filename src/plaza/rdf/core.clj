@@ -96,15 +96,15 @@
 
 (defmethod build-model [nil]
   [& options]
-  (if (nil? *rdf-model-builder-fn*)
-    (throw (Exception. "Some framework must be loaded"))
-    (build-model *rdf-model-builder-fn*)))
+  (if *rdf-model-builder-fn*
+    (build-model *rdf-model-builder-fn*)
+    (throw (Exception. "Some framework must be loaded"))))
 
 (defmethod build-model :default
   [& options]
-  (if (nil? *rdf-model-builder-fn*)
-    (throw (Exception. "Some framework must be loaded"))
-    (build-model *rdf-model-builder-fn*)))
+  (if *rdf-model-builder-fn*
+    (build-model *rdf-model-builder-fn*)
+    (throw (Exception. "Some framework must be loaded"))))
 
 
 
