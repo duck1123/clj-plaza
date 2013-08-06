@@ -201,12 +201,14 @@
   (let [m (build-model :jena)
         _m (with-model m
              (document->model
-              (java.io.ByteArrayInputStream. (.getBytes *test-xml-blanks*)) :xml))]
-    (count (model->triples m))          => 4
-    (o (first (model->triples m)))      => bnode?
-    (o (second (model->triples m))) =not=> bnode?
-    (o (nth (model->triples m) 2))  =not=> bnode?
-    (o (nth (model->triples m) 3))  =not=> bnode?))
+              (java.io.ByteArrayInputStream. (.getBytes *test-xml-blanks*)) :xml))
+        triples (model->triples m)]
+    (count triples)          => 4
+    (let [[a b c d] triples]
+      (o a)      => bnode?
+      (o b)  =not=> bnode?
+      (o c)  =not=> bnode?
+      (o d)  =not=> bnode?)))
 
 (fact "find-resources"
   (let [m (build-model :jena)
