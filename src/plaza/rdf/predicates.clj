@@ -9,7 +9,7 @@
                                literal-value qname-local qname-prefix
                                resource-id]]
         [plaza.rdf.sparql :only [*sparql-framework* var-expr?]]
-        [plaza.utils :only [keyword-to-string]])
+        [plaza.utils :only [keyword->string]])
   (:require [plaza.rdf.core :as rdf]))
 
 (defn literal-fn?
@@ -222,7 +222,7 @@
     (and (not (or (keyword? atom)
                   (rdf/literal? atom)))
          (= (qname-local atom)
-            (keyword-to-string local)))))
+            (keyword->string local)))))
 
 (defn matches-qname-prefix?
   "Matches a URI or curie against a triple atom"
@@ -231,7 +231,7 @@
     (and (not (or (keyword? atom) (rdf/literal? atom)))
          (= (qname-prefix atom)
             (or (find-ns-registry prefix)
-                (keyword-to-string prefix))))))
+                (keyword->string prefix))))))
 
 (defn matches-regex?
   "Checks if a value matches a ceratin regular expression"
