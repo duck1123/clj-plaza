@@ -23,7 +23,8 @@
   (is (instance? plaza.rdf.implementations.sesame.SesameProperty (create-property *rdf-model* :rdf "test"))))
 
 (deftest test-property-ns
-  (is (= "http://test.com/" (qname-prefix (create-property (build-model) "http://test.com/test")))))
+  (is (= "http://test.com/" (qname-prefix (create-property (build-model) "http://test.com/test"))))
+  (is (= "https://test.com/" (qname-prefix (create-property (build-model) "https://test.com/test")))))
 
 (deftest test-property-local
   (is (= "test" (qname-local (create-property (build-model) "http://test.com/test")))))
@@ -38,7 +39,8 @@
   (is (instance? plaza.rdf.implementations.sesame.SesameResource (create-resource *rdf-model* :rdf "test"))))
 
 (deftest test-resource-ns
-  (is (= "http://test.com/" (qname-prefix (create-resource (build-model) "http://test.com/test")))))
+  (is (= "http://test.com/" (qname-prefix (create-resource (build-model) "http://test.com/test"))))
+  (is (= "https://test.com/" (qname-prefix (create-resource (build-model) "https://test.com/test")))))
 
 (deftest test-resource-local
   (is (= "test" (qname-local (create-resource (build-model) "http://test.com/test")))))
