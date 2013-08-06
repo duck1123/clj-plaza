@@ -7,7 +7,7 @@ A Clojure library for working with RDF graphs, triple spaces and RESTful semanti
 Leiningen
 
 ```clojure
-[net.kronkltd/plaza "0.2.0-SNAPSHOT"]
+[net.kronkltd/plaza "0.2.0-alpha1"]
 ```
 
 Maven
@@ -16,7 +16,7 @@ Maven
 <dependency>
   <groupId>net.kronkltd</groupId>
   <artifactId>plaza</artifactId>
-  <version>0.2.0-SNAPSHOT</version>
+  <version>0.2.0-alpha1</version>
 </dependency>
 ```
 
