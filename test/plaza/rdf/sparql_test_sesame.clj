@@ -1,7 +1,10 @@
 (ns plaza.rdf.sparql-test-sesame
-  (:use [plaza.rdf predicates core sparql]
-        [plaza.rdf.implementations sesame]
-        [clojure.test]))
+  (:use clojure.test
+        [plaza.rdf.core :only [d rdf:type optional opt l make-triples defmodel
+                               model-add-triples to-string]]
+        plaza.rdf.implementations.sesame
+        plaza.rdf.predicates
+        plaza.rdf.sparql))
 
 ;; we'll test with sesame
 (init-sesame-framework)
@@ -124,7 +127,7 @@
 
 (deftest test-build-filters-2
   (let [framework (plaza.rdf.implementations.sesame.SesameSparqlFramework.)
-        gt (.toString (build-filter framework (make-filter :> :?x (d 3))))
+        gt (.toString (build-filter framework (make-filter :> :?x (d (int 3)))))
         gt-2 (.toString (build-filter framework (make-filter :> :?x (make-filter :bound :?y))))]
     (is (= gt "( ?x > \"3\"^^xsd:int )"))
     (is (= gt-2 "( ?x > bound(?y) )"))))

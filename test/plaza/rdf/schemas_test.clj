@@ -1,7 +1,11 @@
 (ns plaza.rdf.schemas-test
-  (:use [plaza.rdf core sparql schemas]
-        [plaza.rdf.implementations sesame]
-        [clojure.test]))
+  (:use clojure.test
+        plaza.rdf.core
+        plaza.rdf.implementations.sesame
+        plaza.rdf.schemas
+        plaza.rdf.sparql
+        midje.sweet)
+  (:require [clojure.tools.logging :as log]))
 
 (init-sesame-framework)
 (use 'plaza.rdf.vocabularies.foaf)
@@ -37,7 +41,9 @@
         (is (nil? (property-alias modelpp :foo))))))
 
 (deftest test-to-map
-  (let [m (to-map *test-model* [[:test ["http://test.com/" :name] "name"] [:test ["http://test.com/" :price] (d 120)] [:test :number (d 10)]])]
+  (let [m (to-map *test-model* [[:test ["http://test.com/" :name] "name"]
+                                [:test ["http://test.com/" :price] (d 120)]
+                                [:test :number (d 10)]])]
     (is (= m {:name (rdf-resource "name") :price (d 120) :number (d 10)}))))
 
 (deftest test-to-pattern

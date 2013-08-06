@@ -1,7 +1,8 @@
 (ns plaza.rdf.core-test
   (:use (plaza.rdf core)
         (plaza.rdf.implementations jena common)
-        clojure.test))
+        clojure.test
+        midje.sweet))
 
 ;; rdf/xml used in the tests
 (def ^:dynamic *test-xml* "<rdf:RDF

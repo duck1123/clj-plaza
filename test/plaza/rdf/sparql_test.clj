@@ -1,14 +1,21 @@
 (ns plaza.rdf.sparql-test
-  (:use [plaza.utils]
-        [plaza.rdf predicates core sparql]
-        [plaza.rdf.implementations jena]
-        [clojure.test]))
+  (:use clojure.test
+        [plaza.rdf.core :only [d rdf:type optional opt l make-triples
+                               defmodel model-add-triples to-string
+                               triple-predicate triple-subject triples-abstraction]]
+        plaza.rdf.implementations.jena
+        plaza.rdf.predicates
+        plaza.rdf.sparql
+        plaza.utils
+        midje.sweet)
+  (:require [clojure.tools.logging :as log])
+  (:import plaza.rdf.implementations.jena.JenaSparqlFramework))
 
 ;; we'll test with jena
 (init-jena-framework)
 
 ;; rdf/xml used in the tests
-(def *test-xml* "<rdf:RDF
+(def ^:dynamic *test-xml* "<rdf:RDF
     xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"
     xmlns:test=\"http://plaza.org/ontologies/\" >
   <rdf:Description rdf:about=\"http://plaza.org/ontologies/a\">
@@ -125,7 +132,7 @@
 
 (deftest test-build-filters-2
   (let [framework (plaza.rdf.implementations.jena.JenaSparqlFramework.)
-        gt (.toString (build-filter framework (make-filter :> :?x (d 3))))
+        gt (.toString (build-filter framework (make-filter :> :?x (d (int 3)))))
         gt-2 (.toString (build-filter framework (make-filter :> :?x (make-filter :bound :?y))))]
     (is (= gt "( ?x > \"3\"^^xsd:int )"))
     (is (= gt-2 "( ?x > bound(?y) )"))))

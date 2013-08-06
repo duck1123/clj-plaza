@@ -1,7 +1,12 @@
 (ns plaza.rdf.predicates-test
-  (:use [plaza.rdf core predicates]
-        [plaza.rdf.implementations jena]
-        [clojure.test]))
+  (:use clojure.test
+        [plaza.rdf.core :only [l make-triples
+                               d triple-subject
+                               rdf:Property
+                               rdfs:Class b]]
+        plaza.rdf.implementations.jena
+        plaza.rdf.predicates)
+  (:require [plaza.rdf.core :as rdf]))
 
 (init-jena-framework)
 
