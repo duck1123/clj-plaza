@@ -89,10 +89,10 @@
 (fact "make-typed-literal-sesame"
   (let [m (build-model :sesame)
         p1 (with-model m
-             (rdf-typed-literal 2))
+             (rdf-typed-literal (int 2)))
         p2 (with-model m
              (rdf-typed-literal 2 :anyuri))]
-    (to-string p1) => "\"2\"^^<http://www.w3.org/2001/XMLSchema#long>"
+    (to-string p1) => "\"2\"^^<http://www.w3.org/2001/XMLSchema#int>"
     (to-string p2) => "\"2\"^^<http://www.w3.org/2001/XMLSchema#anyURI>"))
 
 (fact "triple-subject-sesame"
@@ -130,11 +130,11 @@
                (triple-object (l "test"))))
         p4 (with-model m
              (with-rdf-ns "http://test.com/"
-               (triple-object (d 2))))]
+               (triple-object (d (int 2)))))]
     (to-string p1) => "http://test.com/p"
     (to-string p2) => "http://www.w3.org/1999/02/22-rdf-syntax-ns#p"
     (to-string p3) => "test"
-    (to-string p4) => "\"2\"^^<http://www.w3.org/2001/XMLSchema#long>"))
+    (to-string p4) => "\"2\"^^<http://www.w3.org/2001/XMLSchema#int>"))
 
 (fact "rdf-triple-a-sesame"
   (let [m (build-model :sesame)
