@@ -92,7 +92,7 @@
              (rdf-typed-literal 2))
         p2 (with-model m
              (rdf-typed-literal 2 :anyuri))]
-    (to-string p1) => "\"2\"^^<http://www.w3.org/2001/XMLSchema#int>"
+    (to-string p1) => "\"2\"^^<http://www.w3.org/2001/XMLSchema#long>"
     (to-string p2) => "\"2\"^^<http://www.w3.org/2001/XMLSchema#anyURI>"))
 
 (fact "triple-subject-sesame"
@@ -134,7 +134,7 @@
     (to-string p1) => "http://test.com/p"
     (to-string p2) => "http://www.w3.org/1999/02/22-rdf-syntax-ns#p"
     (to-string p3) => "test"
-    (to-string p4) => "\"2\"^^<http://www.w3.org/2001/XMLSchema#int>"))
+    (to-string p4) => "\"2\"^^<http://www.w3.org/2001/XMLSchema#long>"))
 
 (fact "rdf-triple-a-sesame"
   (let [m (build-model :sesame)
