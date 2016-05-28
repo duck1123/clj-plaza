@@ -273,7 +273,9 @@
   (hashCode [resource]
     (.hashCode (resource-id resource)))
   (equals [resource other-resource]
-    (= (resource-id resource) (resource-id other-resource))))
+    (if (satisfies? RDFResource other-resource)
+      (= (resource-id resource) (resource-id other-resource))
+      false)))
 
 (deftype SesameProperty [res]
   RDFResource RDFNode RDFDatatypeMapper JavaObjectWrapper RDFPrintable
