@@ -1,4 +1,4 @@
-(defproject net.kronkltd/plaza "0.3.0"
+(defproject net.kronkltd/plaza "0.4.0-SNAPSHOT"
   :description "Plaza framework for semantic distributed applications"
   :url "http://github.com/duck1123/clj-plaza"
   :dependencies [[org.clojure/clojure "1.6.0"]
