@@ -26,6 +26,7 @@
            org.apache.jena.rdf.model.AnonId
            org.apache.jena.rdf.model.Literal
            org.apache.jena.rdf.model.ModelFactory
+           org.apache.jena.rdf.model.ResourceFactory
            org.apache.jena.rdf.model.impl.PropertyImpl
            org.apache.jena.rdf.model.impl.ResourceImpl
            org.apache.jena.reasoner.rulesys.RDFSRuleReasonerFactory
@@ -285,7 +286,7 @@
   (literal-datatype-obj [resource]
     (find-jena-datatype (.getDatatypeURI res)))
 
-  (literal-lexical-form [] (.getLexicalForm res))
+  (literal-lexical-form [_] (.getLexicalForm res))
 
   RDFPrintable
 
@@ -364,9 +365,10 @@
     (create-property model ns local))
 
   (create-resource [model uri]
-    (if (satisfies? RDFResource uri)
+    (println "uri: " uri)
+    (if (instance? RDFResource uri)
       uri
-      (ResourceFactory/createURI
+      (ResourceFactory/createResource
        (let [uri-string (keyword->string uri)]
          (if (or (.startsWith uri-string "http://") (.startsWith uri-string "https://"))
            uri-string
@@ -396,10 +398,13 @@
   (create-typed-literal [model lit] (ResourceFactory/createTypedLiteral lit))
 
   (create-typed-literal [model lit type]
+    (println "lit: " lit)
+    (println "type: " type)
     (let [dt (find-datatype model type)]
+      (println "dt: " dt)
       (if (instance? GregorianCalendar lit)
         (ResourceFactory/createTypedLiteral lit)
-        (ResourceFactory/createTypedLiteral lit dt))))
+        (ResourceFactory/createTypedLiteral (str lit) dt))))
 
   (critical-write [model f]
     (do
