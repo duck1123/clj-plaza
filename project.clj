@@ -9,8 +9,14 @@
                  [net.rootdev/java-rdfa "0.4.2"]
                  [com.franz/openrdf-sesame-onejar "2.3.1"]]
   :min-lein-version "2.0.0"
-  :repositories {"jboss" "http://repository.jboss.org/nexus/content/groups/public/"
-                 "apache-repo-release" "https://repository.apache.org/content/repositories/releases/"}
+  :repositories [["jboss" "http://repository.jboss.org/nexus/content/groups/public/"]
+                 ["apache-repo-release" "https://repository.apache.org/content/repositories/releases/"]
+                 ["snapshots" {:url "http://repo.jiksnu.org/repository/maven-snapshots/"
+                               :username [:gpg :env/repo_username]
+                               :password [:gpg :env/repo_password]}]
+                 ["releases" {:url "http://repo.jiksnu.org/repository/maven-releases/"
+                               :username [:gpg :env/repo_username]
+                               :password [:gpg :env/repo_password]}]]
   :profiles {:dev
              {:dependencies
               [[log4j "1.2.17"]
