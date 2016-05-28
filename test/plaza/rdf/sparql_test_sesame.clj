@@ -4,7 +4,8 @@
                                model-add-triples to-string]]
         plaza.rdf.implementations.sesame
         plaza.rdf.predicates
-        plaza.rdf.sparql))
+        plaza.rdf.sparql
+        midje.sweet))
 
 ;; we'll test with sesame
 (init-sesame-framework)
@@ -126,27 +127,24 @@
         res (.toString (build-filter *sparql-framework* (first (:filters (parse-sparql->query *sparql-framework* *tq*)))))]
     (is (= res "( bound(?date) < \"2005-01-01T00:00:00Z\"^^xsd:dateTime )"))))
 
-(deftest test-go-back-query
+(fact "go-back-query"
   (let [query (defquery
                 (query-set-type :select)
                 (query-set-vars [:?x])
                 (query-set-pattern
                  (make-pattern [[:?x "a" (d 2)]])))
-
         triples (make-triples [[:m :a (d 2)]
                                [:n :b (d 2)]
                                [:o :a (d 2)]
                                [:p :a (d 3)]])
-
-        model (defmodel
-                (model-add-triples triples))
-
-        results (model-query-triples model query)]
-    (is (= (count results) 2))))
+        model (defmodel (model-add-triples triples))]
+    (count (model-query-triples model query)) => 2))
 
 (deftest test-collect-vars
-  (is (= (set (pattern-collect-vars (make-pattern [[:?a :?b (l "test")] [:a :?b (d 2)]])))  (set [:?a :?b])))
-  (is (= (set (pattern-collect-vars (make-pattern [[?s ?p ?o]]))) (set [:?s :?p :?o]))))
+  (is (= (set (pattern-collect-vars (make-pattern [[:?a :?b (l "test")] [:a :?b (d 2)]])))
+         (set [:?a :?b])))
+  (is (= (set (pattern-collect-vars (make-pattern [[?s ?p ?o]])))
+         (set [:?s :?p :?o]))))
 
 
 
