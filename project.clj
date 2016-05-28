@@ -21,6 +21,7 @@
              {:dependencies
               [[log4j "1.2.17"]
                [midje "1.6.3"]]}}
+  :auto-clean false
   :plugins [[lein-midje "3.1.3"]
             [codox "0.6.7"]]
   :autodoc {:name "clj-plaza",
