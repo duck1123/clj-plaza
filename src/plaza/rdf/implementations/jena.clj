@@ -196,83 +196,120 @@
 
 
 (deftype JenaLiteral [res]
-  RDFResource RDFNode RDFDatatypeMapper JavaObjectWrapper RDFPrintable
-  (to-java [resource]
-    res)
+  RDFNode
+
+  (bnode?    [_] false)
+  (resource? [_] false)
+  (property? [_] false)
+  (literal?  [_] true)
+
+  RDFResource
+
+  (resource-id [resource]
+    (to-string resource))
+
+  (qname-prefix [resource]
+    (throw (Exception. "Cannot retrieve qname-prefix value for a literal")))
+
+  (qname-local [resource]
+    (throw (Exception. "Cannot retrieve qname-local value for a literal")))
+
+  (literal-value [resource]
+    (.getValue res))
+
+  (literal-language [resource]
+    (.getLanguage res))
+
+  (literal-datatype-uri [resource]
+    "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral")
+
+  (literal-datatype-obj [resource]
+    (find-jena-datatype :xmlliteral))
+
+  (literal-lexical-form [resource]
+    (.getLexicalForm res))
+
+  RDFPrintable
+
   (to-string [resource]
     (let [lang (literal-language resource)]
       (if (= "" lang)
         (literal-lexical-form resource)
         (str  (literal-lexical-form resource) "@" lang))))
-  (bnode? [resource]
-    false)
-  (resource? [resource]
-    false)
-  (property? [resource]
-    false)
-  (literal? [resource]
-    true)
-  (resource-id [resource]
-    (to-string resource))
-  (qname-prefix [resource]
-    (throw (Exception. "Cannot retrieve qname-prefix value for a literal")))
-  (qname-local [resource]
-    (throw (Exception. "Cannot retrieve qname-local value for a literal")))
-  (literal-value [resource]
-    (.getValue res))
-  (literal-language [resource]
-    (.getLanguage res))
-  (literal-datatype-uri [resource]
-    "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral")
-  (literal-datatype-obj [resource]
-    (find-jena-datatype :xmlliteral))
-  (literal-lexical-form [resource]
-    (.getLexicalForm res))
+
+  RDFDatatypeMapper
+
   (find-datatype [resource literal]
     (find-jena-datatype literal))
+
+  JavaObjectWrapper
+
+  (to-java [resource]
+    res)
+
+  Object
+
   (toString [resource]
     (to-string resource))
+
   (hashCode [resource]
     (.hashCode (resource-id resource)))
+
   (equals [resource other-resource]
     (= (resource-id resource) (resource-id other-resource))))
 
 (deftype JenaTypedLiteral [res]
-  RDFResource RDFNode RDFDatatypeMapper JavaObjectWrapper RDFPrintable
-  (to-java [resource]
-    res)
-  (to-string [resource]
-    (str  "\""(literal-lexical-form resource) "\"^^<" (literal-datatype-uri resource) ">"))
-  (bnode? [resource]
-    false)
-  (resource? [resource]
-    false)
-  (property? [resource]
-    false)
-  (literal? [resource]
-    true)
-  (resource-id [resource]
-    (to-string resource))
+  RDFNode
+
+  (bnode?    [_] false)
+  (resource? [_] false)
+  (property? [_] false)
+  (literal?  [_] true)
+
+  RDFResource
+
+  (resource-id [resource] (to-string resource))
+
   (qname-prefix [resource]
     (throw (Exception. "Cannot retrieve qname-prefix value for a literal")))
+
   (qname-local [resource]
     (throw (Exception. "Cannot retrieve qname-local value for a literal")))
-  (literal-value [resource]
-    (.getValue res))
-  (literal-language [resource]
-    "")
-  (literal-datatype-uri [resource]
-    (str (.getDatatypeURI res)))
+
+  (literal-value [_] (.getValue res))
+
+  (literal-language [_] "")
+
+  (literal-datatype-uri [_] (str (.getDatatypeURI res)))
+
   (literal-datatype-obj [resource]
     (find-jena-datatype (.getDatatypeURI res)))
-  (literal-lexical-form [resource]
-    (.getLexicalForm res))
+
+  (literal-lexical-form [] (.getLexicalForm res))
+
+  RDFPrintable
+
+  (to-string [resource]
+    (str "\"" (literal-lexical-form resource) "\"^^<" (literal-datatype-uri resource) ">"))
+
+  RDFDatatypeMapper
+
   (find-datatype [resource literal]
     (find-jena-datatype literal))
+
+  JavaObjectWrapper
+
+  (to-java [resource]
+    res)
+
+  Object
+
   (toString [resource]
     (to-string resource))
+
   (hashCode [resource]
     (.hashCode (resource-id resource)))
+
   (equals [resource other-resource]
     (and (= (class resource) (class other-resource))
          (= (resource-id resource) (resource-id other-resource)))))
@@ -318,58 +355,52 @@
 
 (deftype JenaModel [mod]
   JavaObjectWrapper
-  (to-java [model]
-    mod)
+
+  (to-java [_] mod)
 
   RDFModel
+
   (create-resource [model ns local]
-    (.createResource mod (expand-ns ns local)))
+    (create-property model ns local))
+
   (create-resource [model uri]
-    (if (instance? RDFResource uri)
+    (if (satisfies? RDFResource uri)
       uri
-      (if (or (.startsWith (keyword->string uri) "http://")
-              (.startsWith (keyword->string uri) "https://"))
-        (JenaResource.
-         (.createResource mod (keyword->string uri)))
-        (JenaResource.
-         (.createResource mod (str *rdf-ns* (keyword->string uri)))))))
-  (create-property [model ns local]
-    (.createProperty mod (expand-ns ns local)))
+      (ResourceFactory/createURI
+       (let [uri-string (keyword->string uri)]
+         (if (or (.startsWith uri-string "http://") (.startsWith uri-string "https://"))
+           uri-string
+           (str *rdf-ns* uri-string))))))
+
+  (create-property [_ ns local]
+    (ResourceFactory/createProperty ns local))
+
   (create-property [model uri]
     (if (instance? RDFResource uri)
       (if (property? uri)
         uri
-        (JenaProperty.
-         (.createProperty mod (str uri))))
+        (ResourceFactory/createProperty (str uri)))
       (if (or (.startsWith (keyword->string uri) "http://")
               (.startsWith (keyword->string uri) "https://"))
-        (JenaProperty.
-         (.createProperty mod (keyword->string uri)))
-        (JenaProperty.
-         (.createProperty mod *rdf-ns* (keyword->string uri))))))
-  (create-blank-node [model]
-    (JenaBlank.
-     (.createResource mod (AnonId.))))
-  (create-blank-node [model id]
-    (let [anon-id (keyword->string id)]
-      (JenaBlank.
-       (.createResource mod (AnonId. anon-id)))))
-  (create-literal [model lit]
-    (JenaLiteral.
-     (.createLiteral mod lit false)))
-  (create-literal [model lit lang]
-    (JenaLiteral.
-     (.createLiteral mod lit lang)))
-  (create-typed-literal [model lit]
-    (JenaTypedLiteral.
-     (.createTypedLiteral mod lit)))
+        (ResourceFactory/createProperty (keyword->string uri))
+        (ResourceFactory/createProperty *rdf-ns* (keyword->string uri)))))
+
+  (create-blank-node [_] (ResourceFactory/createResource))
+
+  (create-blank-node [_ id] (ResourceFactory/createResource (keyword->string id)))
+
+  (create-literal [model lit] (ResourceFactory/createStringLiteral lit))
+
+  (create-literal [model lit lang] (ResourceFactory/createLangLiteral lit lang))
+
+  (create-typed-literal [model lit] (ResourceFactory/createTypedLiteral lit))
+
   (create-typed-literal [model lit type]
     (let [dt (find-datatype model type)]
       (if (instance? GregorianCalendar lit)
-        (JenaTypedLiteral.
-         (.createTypedLiteral mod lit))
-        (JenaTypedLiteral.
-         (.createTypedLiteral mod lit dt)))))
+        (ResourceFactory/createTypedLiteral lit)
+        (ResourceFactory/createTypedLiteral lit dt))))
+
   (critical-write [model f]
     (do
       (.enterCriticalSection mod Lock/WRITE)
