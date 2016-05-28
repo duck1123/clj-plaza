@@ -1,4 +1,4 @@
-(defproject net.kronkltd/plaza "0.3.0-SNAPSHOT"
+(defproject net.kronkltd/plaza "0.3.0"
   :description "Plaza framework for semantic distributed applications"
   :url "http://github.com/duck1123/clj-plaza"
   :dependencies [[org.clojure/clojure "1.6.0"]
@@ -9,12 +9,19 @@
                  [net.rootdev/java-rdfa "0.4.2"]
                  [com.franz/openrdf-sesame-onejar "2.3.1"]]
   :min-lein-version "2.0.0"
-  :repositories {"jboss" "http://repository.jboss.org/nexus/content/groups/public/"
-                 "apache-repo-release" "https://repository.apache.org/content/repositories/releases/"}
+  :repositories [["jboss" "http://repository.jboss.org/nexus/content/groups/public/"]
+                 ["apache-repo-release" "https://repository.apache.org/content/repositories/releases/"]
+                 ["snapshots" {:url "http://repo.jiksnu.org/repository/maven-snapshots/"
+                               :username [:gpg :env/repo_username]
+                               :password [:gpg :env/repo_password]}]
+                 ["releases" {:url "http://repo.jiksnu.org/repository/maven-releases/"
+                               :username [:gpg :env/repo_username]
+                               :password [:gpg :env/repo_password]}]]
   :profiles {:dev
              {:dependencies
               [[log4j "1.2.17"]
                [midje "1.6.3"]]}}
+  :auto-clean false
   :plugins [[lein-midje "3.1.3"]
             [codox "0.6.7"]]
   :autodoc {:name "clj-plaza",
