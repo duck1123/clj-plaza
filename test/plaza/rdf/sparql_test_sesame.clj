@@ -39,14 +39,14 @@
         built-query (build-query framework query)]
     (is (= (.isEmpty (first (.getElements (.getQueryPattern built-query))))) false)
     (is (= (.getResultVars built-query) ["v"]))
-    (is (= (.getQueryType built-query) com.hp.hpl.jena.query.Query/QueryTypeSelect))))
+    (is (= (.getQueryType built-query) org.apache.jena.query.Query/QueryTypeSelect))))
 
 ;; (deftest test-build-query-1
 ;;   (let [query (sparql->query "PREFIX rdf: <http://test.com> SELECT ?v WHERE { ?v ?p 2 .?v rdf:algo 3 . ?v ?q 4  }")
 ;;         built-query (build-query query)]
 ;;     (is (= (.isEmpty (first (.getElements (.getQueryPattern built-query))))) false)
 ;;     (is (= (.getResultVars built-query) ["v"]))
-;;     (is (= (.getQueryType built-query) com.hp.hpl.jena.query.Query/QueryTypeSelect))))
+;;     (is (= (.getQueryType built-query) org.apache.jena.query.Query/QueryTypeSelect))))
 
 (deftest test-build-query-2
   (let [framework (plaza.rdf.implementations.sesame.SesameSparqlFramework.)

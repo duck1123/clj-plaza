@@ -48,7 +48,7 @@ WHERE {
         built-query (build-query framework query)]
     (.isEmpty (first (.getElements (.getQueryPattern built-query)))) => false
     (.getResultVars built-query) => ["v"]
-    (.getQueryType built-query) => com.hp.hpl.jena.query.Query/QueryTypeSelect))
+    (.getQueryType built-query) => org.apache.jena.query.Query/QueryTypeSelect))
 
 (fact "build-query-1"
   (let [framework (plaza.rdf.implementations.jena.JenaSparqlFramework.)
@@ -58,7 +58,7 @@ WHERE {
         built-query (build-query framework query)]
     (.isEmpty (first (.getElements (.getQueryPattern built-query)))) => false
     (.getResultVars built-query) => ["v"]
-    (.getQueryType built-query) => com.hp.hpl.jena.query.Query/QueryTypeSelect))
+    (.getQueryType built-query) => org.apache.jena.query.Query/QueryTypeSelect))
 
 (fact "build-query-2"
   (let [framework (plaza.rdf.implementations.jena.JenaSparqlFramework.)

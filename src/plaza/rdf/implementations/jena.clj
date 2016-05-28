@@ -19,44 +19,44 @@
         plaza.rdf.implementations.common
         plaza.utils)
   (:require [clojure.tools.logging :as log])
-  (:import com.hp.hpl.jena.datatypes.xsd.XSDDatatype
-           com.hp.hpl.jena.datatypes.xsd.impl.XMLLiteralType
-           com.hp.hpl.jena.graph.Node
-           com.hp.hpl.jena.graph.Triple
-           com.hp.hpl.jena.rdf.model.AnonId
-           com.hp.hpl.jena.rdf.model.Literal
-           com.hp.hpl.jena.rdf.model.ModelFactory
-           com.hp.hpl.jena.rdf.model.impl.PropertyImpl
-           com.hp.hpl.jena.rdf.model.impl.ResourceImpl
-           com.hp.hpl.jena.reasoner.rulesys.RDFSRuleReasonerFactory
-           com.hp.hpl.jena.shared.Lock
-           com.hp.hpl.jena.sparql.core.Var
-           com.hp.hpl.jena.sparql.expr.E_Datatype
-           com.hp.hpl.jena.sparql.expr.E_Add
-           com.hp.hpl.jena.sparql.expr.E_Bound
-           com.hp.hpl.jena.sparql.expr.E_Divide
-           com.hp.hpl.jena.sparql.expr.E_Equals
-           com.hp.hpl.jena.sparql.expr.E_GreaterThan
-           com.hp.hpl.jena.sparql.expr.E_GreaterThanOrEqual
-           com.hp.hpl.jena.sparql.expr.E_IsBlank
-           com.hp.hpl.jena.sparql.expr.E_IsIRI
-           com.hp.hpl.jena.sparql.expr.E_IsLiteral
-           com.hp.hpl.jena.sparql.expr.E_IsURI
-           com.hp.hpl.jena.sparql.expr.E_Lang
-           com.hp.hpl.jena.sparql.expr.E_LessThan
-           com.hp.hpl.jena.sparql.expr.E_LessThanOrEqual
-           com.hp.hpl.jena.sparql.expr.E_Multiply
-           com.hp.hpl.jena.sparql.expr.E_NotEquals
-           com.hp.hpl.jena.sparql.expr.E_Str
-           com.hp.hpl.jena.sparql.expr.E_Subtract
-           com.hp.hpl.jena.sparql.syntax.Element
-           com.hp.hpl.jena.sparql.syntax.ElementFilter
-           com.hp.hpl.jena.sparql.syntax.ElementGroup
-           com.hp.hpl.jena.sparql.syntax.ElementOptional
-           com.hp.hpl.jena.query.DatasetFactory
-           com.hp.hpl.jena.query.QueryExecutionFactory
-           com.hp.hpl.jena.query.QueryFactory
-           com.hp.hpl.jena.vocabulary.ReasonerVocabulary
+  (:import org.apache.jena.datatypes.xsd.XSDDatatype
+           org.apache.jena.datatypes.xsd.impl.XMLLiteralType
+           org.apache.jena.graph.Node
+           org.apache.jena.graph.Triple
+           org.apache.jena.rdf.model.AnonId
+           org.apache.jena.rdf.model.Literal
+           org.apache.jena.rdf.model.ModelFactory
+           org.apache.jena.rdf.model.impl.PropertyImpl
+           org.apache.jena.rdf.model.impl.ResourceImpl
+           org.apache.jena.reasoner.rulesys.RDFSRuleReasonerFactory
+           org.apache.jena.shared.Lock
+           org.apache.jena.sparql.core.Var
+           org.apache.jena.sparql.expr.E_Datatype
+           org.apache.jena.sparql.expr.E_Add
+           org.apache.jena.sparql.expr.E_Bound
+           org.apache.jena.sparql.expr.E_Divide
+           org.apache.jena.sparql.expr.E_Equals
+           org.apache.jena.sparql.expr.E_GreaterThan
+           org.apache.jena.sparql.expr.E_GreaterThanOrEqual
+           org.apache.jena.sparql.expr.E_IsBlank
+           org.apache.jena.sparql.expr.E_IsIRI
+           org.apache.jena.sparql.expr.E_IsLiteral
+           org.apache.jena.sparql.expr.E_IsURI
+           org.apache.jena.sparql.expr.E_Lang
+           org.apache.jena.sparql.expr.E_LessThan
+           org.apache.jena.sparql.expr.E_LessThanOrEqual
+           org.apache.jena.sparql.expr.E_Multiply
+           org.apache.jena.sparql.expr.E_NotEquals
+           org.apache.jena.sparql.expr.E_Str
+           org.apache.jena.sparql.expr.E_Subtract
+           org.apache.jena.sparql.syntax.Element
+           org.apache.jena.sparql.syntax.ElementFilter
+           org.apache.jena.sparql.syntax.ElementGroup
+           org.apache.jena.sparql.syntax.ElementOptional
+           org.apache.jena.query.DatasetFactory
+           org.apache.jena.query.QueryExecutionFactory
+           org.apache.jena.query.QueryFactory
+           org.apache.jena.vocabulary.ReasonerVocabulary
            java.util.GregorianCalendar
            plaza.rdf.core.JavaObjectWrapper
            plaza.rdf.core.RDFDatatypeMapper
@@ -67,7 +67,7 @@
 
 ;; Loading RDFa java
 
-(Class/forName "net.rootdev.javardfa.jena.RDFaReader")
+;; (Class/forName "net.rootdev.javardfa.jena.RDFaReader")
 
 ;; declaration of symbols
 
