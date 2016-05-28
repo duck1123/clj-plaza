@@ -338,13 +338,13 @@
             datatype (find-jena-datatype (literal-datatype-uri atom))
             datatype-val (if (= datatype (find-jena-datatype :xmlliteral))
                            false datatype)]
-        (Node/createLiteral content language datatype-val))
+        (NodeFactory/createLiteral content language datatype-val))
       (if (bnode? atom)
-        (Node/createAnon (AnonId. (resource-id atom)))
+        (NodeFactory/createBlankNode (resource-id atom))
         (let [uri (if (resource? atom)
                     (to-string atom)
                     (str atom))]
-          (Node/createURI uri))))))
+          (NodeFactory/createURI uri))))))
 
 (defn build-query-fn*
   [acum item]
