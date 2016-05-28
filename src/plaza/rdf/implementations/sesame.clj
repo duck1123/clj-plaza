@@ -118,117 +118,161 @@
 ;; Sesame implementation
 
 (deftype SesameResource [res]
-  RDFResource RDFNode JavaObjectWrapper RDFPrintable
-  (to-java [resource]
-    res)
-  (to-string [resource]
-    (str res))
-  (bnode? [resource]
-    false)
-  (resource? [resource]
-    true)
-  (property? [resource]
-    false)
-  (literal? [resource]
-    false)
+  RDFNode
+
+  (bnode?    [_] false)
+  (resource? [_] true)
+  (property? [_] false)
+  (literal?  [_] false)
+
+  RDFResource
+
   (resource-id [resource]
     (to-string resource))
-  (qname-prefix [resource]
+
+  (qname-prefix [_]
     (.getNamespace res))
-  (qname-local [resource]
+
+  (qname-local  [_]
     (.getLocalName res))
+
   (literal-value [resource]
     (throw (Exception. "Cannot retrieve literal value for a blank node")))
+
   (literal-language [resource]
     (throw (Exception. "Cannot retrieve lang for a blank node")))
+
   (literal-datatype-uri [resource]
     (throw (Exception. "Cannot retrieve datatype-uri for a blank node")))
+
   (literal-datatype-obj [resource]
     (throw (Exception. "Cannot retrieve datatype-uri for a blank node")))
+
   (literal-lexical-form [resource]
     (str res))
+
+  JavaObjectWrapper
+
+  (to-java [_] res)
+
+  RDFPrintable
+
+  (to-string [_] (str res))
+
+  Object
+
   (toString [resource]
     (str res))
+
   (equals [resource other-resource]
     (and (= (class resource) (class other-resource))
          (= (resource-id resource) (resource-id other-resource))))
+
   (hashCode [resource]
     (.hashCode (resource-id resource))))
 
 (deftype SesameBlank [res]
-  RDFResource RDFNode JavaObjectWrapper RDFPrintable
-  (to-java [resource]
-    res)
-  (to-string [resource]
-    (str "_:" (resource-id resource)))
-  (bnode? [resource]
-    true)
-  (resource? [resource]
-    false)
-  (property? [resource]
-    false)
-  (literal? [resource]
-    false)
+  RDFNode
+
+  (bnode?    [_] true)
+  (resource? [_] false)
+  (property? [_] false)
+  (literal?  [_] false)
+
+  RDFResource
+
   (resource-id [resource]
     (.getID res))
+
   (qname-prefix [resource]
     "_")
+
   (qname-local [resource]
     (.getID res))
+
   (literal-value [resource]
     (throw (Exception. "Cannot retrieve literal value for a blank node")))
+
   (literal-language [resource]
     (throw (Exception. "Cannot retrieve lang for a blank node")))
+
   (literal-datatype-uri [resource]
     (throw (Exception. "Cannot retrieve datatype-uri for a blank node")))
+
   (literal-datatype-obj [resource]
     (throw (Exception. "Cannot retrieve datatype-uri for a resource")))
+
   (literal-lexical-form [resource]
     (.getId res))
+
+  JavaObjectWrapper
+
+  (to-java [_] res)
+
+  RDFPrintable
+  (to-string [resource]
+    (str "_:" (resource-id resource)))
+
+  Object
+
   (toString [resource]
     (to-string resource))
+
   (hashCode [resource]
     (.hashCode (resource-id resource)))
+
   (equals [resource other-resource]
     (= (resource-id resource) (resource-id other-resource))))
 
 (deftype SesameLiteral [res]
-  RDFResource RDFNode RDFDatatypeMapper JavaObjectWrapper RDFPrintable
-  (to-java [resource]
-    res)
+  RDFNode
+
+  (bnode? [_] false)
+  (resource? [_] false)
+  (property? [_] false)
+  (literal? [_] true)
+
+  RDFResource
+
+  (resource-id [resource]
+    (if (= (.getLanguage res) "")
+      (.getLabel res)
+      (str (.getLabel res) "@" (.getLanguage res))))
+
+  (qname-prefix [_]
+    (throw (Exception. "Cannot retrieve qname-prefix value for a literal")))
+
+  (qname-local [_]
+    (throw (Exception. "Cannot retrieve qname-local value for a literal")))
+
+  (literal-value [_] (.stringValue res))
+
+  (literal-language [_] (if-let [lang (.getLanguage res)] lang ""))
+
+  (literal-datatype-uri [_] "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral")
+
+  (literal-datatype-obj [_] (find-sesame-datatype :xmlliteral))
+
+  (literal-lexical-form [_] (.stringValue res))
+
+  RDFDatatypeMapper
+
+  (find-datatype [_ literal] (find-sesame-datatype literal))
+
+  JavaObjectWrapper
+
+  (to-java [_] res)
+
+  RDFPrintable
+
   (to-string [resource]
     (let [lang (literal-language resource)]
       (if (= "" lang)
         (literal-lexical-form resource)
         (str  (literal-lexical-form resource) "@" lang))))
-  (bnode? [resource]
-    false)
-  (resource? [resource]
-    false)
-  (property? [resource]
-    false)
-  (literal? [resource]
-    true)
-  (resource-id [resource]
-    (if (= (.getLanguage res) "")
-      (.getLabel res)
-      (str (.getLabel res) "@" (.getLanguage res))))
-  (qname-prefix [resource]
-    (throw (Exception. "Cannot retrieve qname-prefix value for a literal")))
-  (qname-local [resource]
-    (throw (Exception. "Cannot retrieve qname-local value for a literal")))
-  (literal-value [resource]
-    (.stringValue res))
-  (literal-language [resource]
-    (let [lang (.getLanguage res)] (if (nil? lang) "" lang)))
-  (literal-datatype-uri [resource]
-    "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral")
-  (literal-datatype-obj [resource]
-    (find-sesame-datatype :xmlliteral))
-  (literal-lexical-form [resource]
-    (.stringValue res))
-  (find-datatype [resource literal]
-    (find-sesame-datatype literal))
+
+  Object
+
   (toString [resource]
     (to-string resource))
   (hashCode [resource]
@@ -237,37 +281,53 @@
     (= (resource-id resource) (resource-id other-resource))))
 
 (deftype SesameTypedLiteral [res]
-  RDFResource RDFNode RDFDatatypeMapper JavaObjectWrapper RDFPrintable
-  (to-java [resource]
-    res)
-  (to-string [resource]
-    (str res))
-  (bnode? [resource]
-    false)
-  (resource? [resource]
-    false)
-  (property? [resource]
-    false)
-  (literal? [resource]
-    true)
+  RDFNode
+
+  (bnode?    [_] false)
+  (resource? [_] false)
+  (property? [_] false)
+  (literal?  [_] true)
+
+  RDFResource
+
   (resource-id [resource]
     (to-string resource))
+
   (qname-prefix [resource]
     (throw (Exception. "Cannot retrieve qname-prefix value for a literal")))
+
   (qname-local [resource]
     (throw (Exception. "Cannot retrieve qname-local value for a literal")))
+
   (literal-value [resource]
     (sesame-typed-literal-tojava res))
-  (literal-language [resource]
-    "")
+
+  (literal-language [resource] "")
+
   (literal-datatype-uri [resource]
     (str (.getDatatype res)))
+
   (literal-datatype-obj [resource]
     (find-sesame-datatype (str (.getDatatype res))))
+
   (literal-lexical-form [resource]
     (str (literal-value resource)))
+
+  RDFDatatypeMapper
+
   (find-datatype [resource literal]
     (find-sesame-datatype literal))
+
+  JavaObjectWrapper
+
+  (to-java [resource] res)
+
+  RDFPrintable
+  (to-string [resource]
+    (str res))
+
+  Object
+
   (toString [resource]
     (str res))
   (hashCode [resource]
