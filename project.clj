@@ -4,8 +4,8 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/tools.logging "0.3.1"]
-                 [org.apache.jena/jena-core "2.11.1"]
-                 [org.apache.jena/jena-arq "2.11.1"]
+                 [org.apache.jena/jena-core "3.1.0"]
+                 [org.apache.jena/jena-arq "3.1.0"]
                  [net.rootdev/java-rdfa "0.4.2"]
                  [com.franz/openrdf-sesame-onejar "2.3.1"]]
   :min-lein-version "2.0.0"
