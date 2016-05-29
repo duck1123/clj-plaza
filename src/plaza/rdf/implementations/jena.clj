@@ -113,85 +113,114 @@
 
 (deftype JenaResource [res]
   RDFNode
-  (bnode? [resource]
-    false)
-  (resource? [resource]
-    true)
-  (property? [resource]
-    false)
-  (literal? [resource]
-    false)
+
+  (bnode?    [_] false)
+  (resource? [_] true)
+  (property? [_] false)
+  (literal?  [_] false)
 
   RDFResource
+
   (resource-id [resource]
+    (println "Res: " res)
     (.getURI res))
+
   (qname-prefix [resource]
     (.getNameSpace res))
+
   (qname-local [resource]
     (.getLocalName res))
+
   (literal-value [resource]
     (throw (Exception. "Cannot retrieve literal value for a resource")))
+
   (literal-language [resource]
     (throw (Exception. "Cannot retrieve lang for a resource")))
+
   (literal-datatype-uri [resource]
     (throw (Exception. "Cannot retrieve datatype-uri for a resource")))
+
   (literal-datatype-obj [resource]
     (throw (Exception. "Cannot retrieve datatype-uri for a resource")))
+
   (literal-lexical-form [resource]
     (resource-id resource))
 
   JavaObjectWrapper
+
   (to-java [resource]
     res)
 
-  RDFPrintable
-  (to-string [resource]
-    (.getURI res))
+  ;; RDFPrintable
+
+  ;; (to-string [resource]
+  ;;   (.getURI res))
 
   Object
-  (toString [resource]
-    (.getURI res))
+
+  ;; (toString [resource]
+  ;;   (.getURI res))
+
   (hashCode [resource]
     (.hashCode (resource-id resource)))
+
   (equals [resource other-resource]
     (and (= (class resource) (class other-resource))
          (= (resource-id resource) (resource-id other-resource)))))
 
 
 (deftype JenaBlank [res]
-  RDFResource RDFNode JavaObjectWrapper RDFPrintable
-  (to-java [resource]
-    res)
-  (to-string [resource]
-    (str "_:" (resource-id resource)))
-  (bnode? [resource]
-    true)
-  (resource? [resource]
-    false)
-  (property? [resource]
-    false)
-  (literal? [resource]
-    false)
+  RDFNode
+
+  (bnode?    [_] true)
+  (resource? [_] false)
+  (property? [_] false)
+  (literal?  [_] false)
+
+  RDFResource
+
   (resource-id [resource]
     (str (.getId res)))
+
   (qname-prefix [resource]
     "_")
+
   (qname-local [resource]
     (str (resource-id resource)))
+
   (literal-value [resource]
     (throw (Exception. "Cannot retrieve literal value for a blank node")))
+
   (literal-language [resource]
     (throw (Exception. "Cannot retrieve lang for a blank node")))
+
   (literal-datatype-uri [resource]
     (throw (Exception. "Cannot retrieve datatype-uri for a blank node")))
+
   (literal-datatype-obj [resource]
     (throw (Exception. "Cannot retrieve datatype-uri for a resource")))
+
   (literal-lexical-form [resource]
     (str "_:" (resource-id resource)))
+
+  RDFPrintable
+
+  (to-string [resource]
+    (str "_:" (resource-id resource)))
+
+  JavaObjectWrapper
+
+  (to-java [resource]
+    res)
+
+  Object
+
   (toString [resource]
     (to-string resource))
+
   (hashCode [resource]
     (.hashCode (resource-id resource)))
+
   (equals [resource other-resource]
     (= (resource-id resource) (resource-id other-resource))))
 
@@ -368,43 +397,48 @@
     (println "uri: " uri)
     (if (instance? RDFResource uri)
       uri
-      (ResourceFactory/createResource
-       (let [uri-string (keyword->string uri)]
-         (if (or (.startsWith uri-string "http://") (.startsWith uri-string "https://"))
-           uri-string
-           (str *rdf-ns* uri-string))))))
+      (JenaResource.
+       (ResourceFactory/createResource
+        (let [uri-string (keyword->string uri)]
+          (if (or (.startsWith uri-string "http://") (.startsWith uri-string "https://"))
+            uri-string
+            (str *rdf-ns* uri-string)))))))
 
   (create-property [_ ns local]
-    (ResourceFactory/createProperty ns local))
+    (JenaProperty. (ResourceFactory/createProperty ns local)))
 
   (create-property [model uri]
     (if (instance? RDFResource uri)
       (if (property? uri)
         uri
-        (ResourceFactory/createProperty (str uri)))
-      (if (or (.startsWith (keyword->string uri) "http://")
-              (.startsWith (keyword->string uri) "https://"))
-        (ResourceFactory/createProperty (keyword->string uri))
-        (ResourceFactory/createProperty *rdf-ns* (keyword->string uri)))))
+        (JenaProperty. (ResourceFactory/createProperty (str uri))))
+      (JenaProperty.
+       (if (or (.startsWith (keyword->string uri) "http://")
+               (.startsWith (keyword->string uri) "https://"))
+         (ResourceFactory/createProperty (keyword->string uri))
+         (ResourceFactory/createProperty *rdf-ns* (keyword->string uri))))))
 
-  (create-blank-node [_] (ResourceFactory/createResource))
+  (create-blank-node [_] (JenaResource.
+                          (ResourceFactory/createResource)))
 
-  (create-blank-node [_ id] (ResourceFactory/createResource (keyword->string id)))
+  (create-blank-node [_ id] (JenaResource.
+                             (ResourceFactory/createResource (keyword->string id))))
 
-  (create-literal [model lit] (ResourceFactory/createStringLiteral lit))
+  (create-literal [model lit] (JenaLiteral.
+                               (ResourceFactory/createStringLiteral lit)))
 
-  (create-literal [model lit lang] (ResourceFactory/createLangLiteral lit lang))
+  (create-literal [model lit lang] (JenaResource.
+                                    (ResourceFactory/createLangLiteral lit lang)))
 
-  (create-typed-literal [model lit] (ResourceFactory/createTypedLiteral lit))
+  (create-typed-literal [model lit] (JenaTypedLiteral.
+                                     (ResourceFactory/createTypedLiteral lit)))
 
   (create-typed-literal [model lit type]
-    (println "lit: " lit)
-    (println "type: " type)
-    (let [dt (find-datatype model type)]
-      (println "dt: " dt)
-      (if (instance? GregorianCalendar lit)
-        (ResourceFactory/createTypedLiteral lit)
-        (ResourceFactory/createTypedLiteral (str lit) dt))))
+    (JenaTypedLiteral.
+     (let [dt (find-datatype model type)]
+       (if (instance? GregorianCalendar lit)
+         (ResourceFactory/createTypedLiteral lit)
+         (ResourceFactory/createTypedLiteral (str lit) dt)))))
 
   (critical-write [model f]
     (do
