@@ -2,8 +2,8 @@
   :description "Plaza framework for semantic distributed applications"
   :url "http://github.com/duck1123/clj-plaza"
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.clojure/data.json "0.2.4"]
-                 [org.clojure/tools.logging "0.2.6"]
+                 [org.clojure/data.json "0.2.6"]
+                 [org.clojure/tools.logging "0.3.1"]
                  [org.apache.jena/jena-core "2.11.1"]
                  [org.apache.jena/jena-arq "2.11.1"]
                  [net.rootdev/java-rdfa "0.4.2"]
@@ -20,10 +20,10 @@
   :profiles {:dev
              {:dependencies
               [[log4j "1.2.17"]
-               [midje "1.6.3"]]}}
+               [midje "1.8.3"]]}}
   :auto-clean false
-  :plugins [[lein-midje "3.1.3"]
-            [codox "0.6.7"]]
+  :plugins [[lein-codox "0.9.5"]
+            [lein-midje "3.2"]]
   :autodoc {:name "clj-plaza",
             :page-title "clj-plaza distributed semantic systems library"
             :author "Antonio Garrote <antoniogarrote@gmail.com> <agarrote@usal.es>"
